@@ -1,0 +1,30 @@
+# PostgreSQL Schema Diff Tool Configuration
+
+# Database connections
+source:
+  host: "localhost"
+  port: 5432
+  database: "source_db"
+  schema: "public"
+  user: "user"
+  password: "password"
+
+target:
+  host: "localhost"
+  port: 5432
+  database: "target_db"
+  schema: "public"
+  user: "user"
+  password: "password"
+
+# Output settings
+output:
+  format: "html"  # html, markdown, json, xml
+  path: "reports/"
+  timezone: "UTC"
+
+# Logging settings
+logging:
+  level: "INFO"
+  format: "json"
+  file: "logs/pgsd.log"
