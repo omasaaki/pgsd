@@ -5,7 +5,7 @@ from .exit_codes import ExitCode
 
 __all__ = [
     "RetryConfig",
-    "RetryManager", 
+    "RetryManager",
     "retry_on_error",
     "async_retry_on_error",
     "ExitCode",

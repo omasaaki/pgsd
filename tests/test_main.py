@@ -14,7 +14,7 @@ def test_main_with_empty_args():
 
 def test_main_with_none_args():
     """Test main function with None args."""
-    with patch.object(sys, 'argv', ['pgsd']):
+    with patch.object(sys, "argv", ["pgsd"]):
         result = main(None)
         assert result == 0
 

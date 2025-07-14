@@ -11,5 +11,6 @@ def test_package_import():
 def test_main_entry_point():
     """Test main entry point."""
     from pgsd.main import main
+
     result = main([])
     assert result == 0

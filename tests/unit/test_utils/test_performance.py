@@ -1,10 +1,7 @@
 """Tests for performance monitoring utilities."""
 
 import pytest
-import time
-import threading
-from unittest.mock import patch, MagicMock
-from concurrent.futures import ThreadPoolExecutor
+from unittest.mock import patch
 
 # Note: Import will be available after implementation
 # from pgsd.utils.performance import (
@@ -62,7 +59,6 @@ class TestPerformanceTracker:
     def setup_method(self):
         """Setup test environment."""
         # Will reset tracker state before each test
-        pass
 
     def test_tracker_initialization(self):
         """Test PerformanceTracker initialization."""
@@ -517,4 +513,3 @@ def mock_time():
 def create_test_metric(operation="test", duration=1.0, success=True, **context):
     """Helper to create test performance metrics."""
     # Will be implemented after PerformanceMetric is available
-    pass

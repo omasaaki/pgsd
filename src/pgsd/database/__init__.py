@@ -13,21 +13,21 @@ Components:
 
 Usage:
     from pgsd.database import DatabaseManager
-    
+
     # Initialize database manager
     manager = DatabaseManager(config)
     await manager.initialize()
-    
+
     # Get connections
     source_conn = await manager.get_source_connection()
     target_conn = await manager.get_target_connection()
-    
+
     # Use connections...
-    
+
     # Return connections
     manager.return_source_connection(source_conn)
     manager.return_target_connection(target_conn)
-    
+
     # Cleanup
     await manager.close_all()
 """
@@ -42,20 +42,22 @@ from .health import HealthMonitor
 
 # Export main classes
 __all__ = [
-    'DatabaseManager',
-    'DatabaseConnector',
-    'ConnectionFactory',
-    'ConnectionPool',
-    'PooledConnection',
-    'VersionManager',
-    'VersionDetector',
-    'HealthMonitor'
+    "DatabaseManager",
+    "DatabaseConnector",
+    "ConnectionFactory",
+    "ConnectionPool",
+    "PooledConnection",
+    "VersionManager",
+    "VersionDetector",
+    "HealthMonitor",
 ]
 
 # Version information
-__version__ = '1.0.0'
+__version__ = "1.0.0"
 
 # Module metadata
-__author__ = 'PGSD Development Team'
-__description__ = 'Database connectivity and management for PostgreSQL schema comparison'
-__license__ = 'MIT'
+__author__ = "PGSD Development Team"
+__description__ = (
+    "Database connectivity and management for PostgreSQL schema comparison"
+)
+__license__ = "MIT"

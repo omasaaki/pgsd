@@ -1,13 +1,9 @@
 """Tests for logging utilities."""
 
 import pytest
-import json
 import tempfile
 import logging
 from pathlib import Path
-from unittest.mock import patch, MagicMock
-from io import StringIO
-import sys
 
 # Note: Import will be available after implementation
 # from pgsd.utils.logger import get_logger, setup_logging, reset_logging, PGSDLogger
@@ -20,7 +16,6 @@ class TestPGSDLogger:
     def setup_method(self):
         """Setup test environment."""
         # reset_logging()
-        pass
 
     def teardown_method(self):
         """Cleanup test environment."""

@@ -3,7 +3,7 @@
 import pytest
 import time
 import threading
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from concurrent.futures import ThreadPoolExecutor
 
 from pgsd.utils.performance import (
@@ -28,7 +28,7 @@ class TestPerformanceMetric:
             timestamp=time.time(),
             context={"key": "value"},
             thread_id=123,
-            success=True
+            success=True,
         )
         assert metric.operation == "test_op"
         assert metric.duration == 1.5
@@ -45,7 +45,7 @@ class TestPerformanceMetric:
             context={},
             thread_id=123,
             success=False,
-            error="Test error message"
+            error="Test error message",
         )
         assert metric.success is False
         assert metric.error == "Test error message"
@@ -57,7 +57,7 @@ class TestPerformanceMetric:
             duration=1.0,
             timestamp=time.time(),
             context={},
-            thread_id=123
+            thread_id=123,
         )
         assert metric.success is True
         assert metric.error is None
@@ -83,7 +83,7 @@ class TestPerformanceTracker:
             duration=1.0,
             timestamp=time.time(),
             context={},
-            thread_id=123
+            thread_id=123,
         )
         self.tracker.record(metric)
 
@@ -107,7 +107,7 @@ class TestPerformanceTracker:
             duration=2.5,
             timestamp=time.time(),
             context={},
-            thread_id=123
+            thread_id=123,
         )
         self.tracker.record(metric)
 
@@ -130,7 +130,7 @@ class TestPerformanceTracker:
                 duration=duration,
                 timestamp=time.time(),
                 context={"iteration": i},
-                thread_id=123
+                thread_id=123,
             )
             self.tracker.record(metric)
 
@@ -151,7 +151,7 @@ class TestPerformanceTracker:
                 timestamp=time.time(),
                 context={},
                 thread_id=123,
-                success=True
+                success=True,
             )
             self.tracker.record(metric)
 
@@ -163,7 +163,7 @@ class TestPerformanceTracker:
             context={},
             thread_id=123,
             success=False,
-            error="Test error"
+            error="Test error",
         )
         self.tracker.record(failed_metric)
 
@@ -181,7 +181,7 @@ class TestPerformanceTracker:
                 duration=i * 0.1,
                 timestamp=time.time(),
                 context={"iteration": i},
-                thread_id=123
+                thread_id=123,
             )
             self.tracker.record(metric)
 
@@ -206,7 +206,7 @@ class TestPerformanceTracker:
                 duration=1.0,
                 timestamp=time.time(),
                 context={},
-                thread_id=123
+                thread_id=123,
             )
             self.tracker.record(metric)
 
@@ -225,7 +225,7 @@ class TestPerformanceTracker:
                 duration=1.0,
                 timestamp=time.time(),
                 context={},
-                thread_id=123
+                thread_id=123,
             )
             self.tracker.record(metric)
 
@@ -237,6 +237,7 @@ class TestPerformanceTracker:
 
     def test_thread_safety(self):
         """Test PerformanceTracker thread safety."""
+
         def record_metrics(thread_id, count=100):
             for i in range(count):
                 metric = PerformanceMetric(
@@ -244,16 +245,13 @@ class TestPerformanceTracker:
                     duration=0.001 * i,
                     timestamp=time.time(),
                     context={"thread": thread_id, "iteration": i},
-                    thread_id=thread_id
+                    thread_id=thread_id,
                 )
                 self.tracker.record(metric)
 
         # Run multiple threads
         with ThreadPoolExecutor(max_workers=5) as executor:
-            futures = [
-                executor.submit(record_metrics, i, 50)
-                for i in range(5)
-            ]
+            futures = [executor.submit(record_metrics, i, 50) for i in range(5)]
             for future in futures:
                 future.result()
 
@@ -308,7 +306,7 @@ class TestPerformanceContext:
         stats = get_performance_tracker().get_stats("tracked_operation")
         assert stats["count"] == 1
 
-    @patch('pgsd.utils.performance.logger')
+    @patch("pgsd.utils.performance.logger")
     def test_context_logging(self, mock_logger):
         """Test PerformanceContext logging."""
         with PerformanceContext("logged_operation", test_data="value"):
@@ -318,7 +316,7 @@ class TestPerformanceContext:
         assert mock_logger.debug.called
         assert mock_logger.info.called
 
-    @patch('pgsd.utils.performance.logger')
+    @patch("pgsd.utils.performance.logger")
     def test_context_logging_with_error(self, mock_logger):
         """Test PerformanceContext logging with error."""
         with pytest.raises(RuntimeError):
@@ -338,6 +336,7 @@ class TestPerformanceDecorators:
 
     def test_measure_time_decorator(self):
         """Test measure_time decorator."""
+
         @measure_time("decorated_function")
         def test_function(x, y):
             time.sleep(0.001)
@@ -351,6 +350,7 @@ class TestPerformanceDecorators:
 
     def test_measure_time_with_default_name(self):
         """Test measure_time decorator with default name."""
+
         @measure_time()
         def test_function_default():
             time.sleep(0.001)
@@ -366,6 +366,7 @@ class TestPerformanceDecorators:
 
     def test_measure_time_with_context(self):
         """Test measure_time decorator with context data."""
+
         @measure_time("context_function", service="test")
         def test_function_with_context(value):
             time.sleep(0.001)
@@ -382,6 +383,7 @@ class TestPerformanceDecorators:
 
     def test_log_performance_decorator(self):
         """Test log_performance decorator."""
+
         @log_performance
         def test_logged_function():
             time.sleep(0.001)
@@ -397,6 +399,7 @@ class TestPerformanceDecorators:
 
     def test_decorator_preserves_function_metadata(self):
         """Test that decorators preserve function metadata."""
+
         @measure_time("metadata_test")
         def documented_function(x):
             """This is a test function."""
@@ -407,6 +410,7 @@ class TestPerformanceDecorators:
 
     def test_decorator_with_exception(self):
         """Test decorator handles exceptions properly."""
+
         @measure_time("exception_test")
         def failing_function():
             raise ValueError("Decorator test error")
@@ -463,6 +467,7 @@ class TestPerformanceIntegration:
 
     def test_concurrent_operations(self):
         """Test concurrent performance monitoring."""
+
         def worker(operation_name, iterations=10):
             for i in range(iterations):
                 with PerformanceContext(operation_name, iteration=i):
@@ -471,8 +476,7 @@ class TestPerformanceIntegration:
         # Run multiple operations concurrently
         with ThreadPoolExecutor(max_workers=3) as executor:
             futures = [
-                executor.submit(worker, f"concurrent_op_{i}", 5)
-                for i in range(3)
+                executor.submit(worker, f"concurrent_op_{i}", 5) for i in range(3)
             ]
             for future in futures:
                 future.result()
@@ -491,7 +495,7 @@ class TestPerformanceIntegration:
                 duration=0.001 * i,
                 timestamp=time.time(),
                 context={"batch": i // 100},
-                thread_id=threading.get_ident()
+                thread_id=threading.get_ident(),
             )
             get_performance_tracker().record(metric)
 
@@ -509,7 +513,7 @@ class TestPerformanceIntegration:
             if success:
                 success_count += 1
             error = None if success else f"Error {i}"
-            
+
             metric = PerformanceMetric(
                 operation="mixed_results",
                 duration=0.1 * i,
@@ -517,7 +521,7 @@ class TestPerformanceIntegration:
                 context={"iteration": i},
                 thread_id=123,
                 success=success,
-                error=error
+                error=error,
             )
             tracker.record(metric)
 
@@ -556,5 +560,5 @@ def create_test_metric(operation="test", duration=1.0, success=True, **context):
         context=context,
         thread_id=threading.get_ident(),
         success=success,
-        error=None if success else "Test error"
+        error=None if success else "Test error",
     )

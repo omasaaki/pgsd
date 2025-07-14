@@ -2,9 +2,15 @@
 
 from .manager import ConfigurationManager
 from .schema import (
-    PGSDConfiguration, DatabaseConfig, OutputConfig, 
-    ComparisonConfig, SystemConfig, PostgreSQLConfig,
-    OutputFormat, LogLevel, SSLMode
+    PGSDConfiguration,
+    DatabaseConfig,
+    OutputConfig,
+    ComparisonConfig,
+    SystemConfig,
+    PostgreSQLConfig,
+    OutputFormat,
+    LogLevel,
+    SSLMode,
 )
 from .validator import ConfigurationValidator
 from .substitutor import EnvironmentSubstitutor
@@ -12,10 +18,10 @@ from .substitutor import EnvironmentSubstitutor
 __all__ = [
     "ConfigurationManager",
     "PGSDConfiguration",
-    "DatabaseConfig", 
+    "DatabaseConfig",
     "OutputConfig",
     "ComparisonConfig",
-    "SystemConfig", 
+    "SystemConfig",
     "PostgreSQLConfig",
     "OutputFormat",
     "LogLevel",

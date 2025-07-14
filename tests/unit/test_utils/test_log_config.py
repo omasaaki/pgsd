@@ -2,10 +2,8 @@
 
 import pytest
 import tempfile
-import yaml
 import os
 from pathlib import Path
-from unittest.mock import patch
 
 # Note: Import will be available after implementation
 # from pgsd.utils.log_config import LogConfig, get_default_config, get_production_config, get_test_config
