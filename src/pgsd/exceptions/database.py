@@ -273,3 +273,40 @@ class QueryExecutionError(DatabaseError):
             recovery_suggestions=recovery_suggestions,
             original_error=original_error
         )
+
+
+class SchemaCollectionError(DatabaseError):
+    """Raised when schema information collection fails."""
+    
+    default_error_code = "SCHEMA_COLLECTION_FAILED"
+    default_severity = ErrorSeverity.MEDIUM
+    default_exit_code = 15
+    
+    def __init__(self, message: str, schema: Optional[str] = None, 
+                 database_type: Optional[str] = None, **kwargs):
+        self.schema = schema
+        self.database_type = database_type
+        
+        # Technical details
+        technical_details = {
+            "schema": schema,
+            "database_type": database_type
+        }
+        
+        # Recovery suggestions
+        recovery_suggestions = [
+            "Verify schema exists and is accessible",
+            "Check database connection permissions",
+            "Ensure schema privileges are sufficient",
+            "Verify PostgreSQL version compatibility"
+        ]
+        
+        if schema:
+            recovery_suggestions.append(f"Confirm schema '{schema}' exists in the database")
+        
+        super().__init__(
+            message=message,
+            technical_details=technical_details,
+            recovery_suggestions=recovery_suggestions,
+            **kwargs
+        )

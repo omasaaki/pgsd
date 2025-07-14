@@ -37,6 +37,7 @@ from .connector import DatabaseConnector
 from .factory import ConnectionFactory
 from .pool import ConnectionPool, PooledConnection
 from .version import VersionManager
+from .version_detector import VersionDetector
 from .health import HealthMonitor
 
 # Export main classes
@@ -47,6 +48,7 @@ __all__ = [
     'ConnectionPool',
     'PooledConnection',
     'VersionManager',
+    'VersionDetector',
     'HealthMonitor'
 ]
 
