@@ -1,0 +1,64 @@
+# PGSD Configuration File
+# PostgreSQL Schema Diff Tool Configuration
+
+database:
+  source:
+    host: "localhost"
+    port: 5432
+    database: "production_db"
+    username: "readonly_user"
+    password: "${PGSD_SOURCE_PASSWORD}"
+    schema: "public"
+    connection_timeout: 30
+    ssl_mode: "prefer"
+  
+  target:
+    host: "localhost"
+    port: 5432
+    database: "development_db"
+    username: "readonly_user"
+    password: "${PGSD_TARGET_PASSWORD}"
+    schema: "public"
+    connection_timeout: 30
+    ssl_mode: "prefer"
+
+output:
+  format: "html"
+  path: "./reports/"
+  filename_template: "schema_diff_{timestamp}"
+  include_timestamp: true
+  timestamp_format: "%Y%m%d_%H%M%S"
+  open_browser: false
+
+comparison:
+  include_views: true
+  include_functions: true
+  include_constraints: true
+  include_indexes: true
+  include_triggers: true
+  ignore_case: false
+  exclude_tables:
+    - "temp_*"
+    - "log_*"
+    - "_migration_*"
+  exclude_columns:
+    - "created_at"
+    - "updated_at"
+  max_diff_items: 1000
+
+system:
+  timezone: "UTC"
+  log_level: "INFO"
+  log_file: "pgsd.log"
+  log_format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  max_connections: 5
+  temp_directory: "/tmp"
+  worker_threads: 4
+  memory_limit_mb: 1024
+
+postgresql:
+  minimum_version: "13.0"
+  version_check: true
+  compatibility_mode: "strict"
+  max_identifier_length: 63
+  case_sensitive_identifiers: false
