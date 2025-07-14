@@ -1,0 +1,22 @@
+[flake8]
+max-line-length = 88
+extend-ignore = 
+    E203,  # whitespace before ':'
+    W503,  # line break before binary operator
+    E501   # line too long (handled by black)
+exclude = 
+    .git,
+    __pycache__,
+    .pytest_cache,
+    .coverage,
+    htmlcov,
+    dist,
+    build,
+    venv,
+    .venv,
+    .env
+per-file-ignores =
+    tests/*:S101  # assert statements in tests are OK
+    tests/*:D100,D101,D102,D103,D104  # missing docstrings in tests are OK
+max-complexity = 10
+docstring-convention = google

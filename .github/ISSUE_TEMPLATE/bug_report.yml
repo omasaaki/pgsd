@@ -1,0 +1,78 @@
+name: Bug Report
+description: バグ報告用テンプレート
+title: "[Bug] "
+labels: ["bug", "triage"]
+assignees:
+  - omasaaki
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        バグ報告ありがとうございます。
+        より早く問題を解決するため、以下の情報をご提供ください。
+        
+  - type: textarea
+    id: description
+    attributes:
+      label: 問題の説明
+      description: 発生している問題を詳しく説明してください
+      placeholder: 何が起こっているか、何を期待していたかを記載してください
+    validations:
+      required: true
+      
+  - type: textarea
+    id: steps
+    attributes:
+      label: 再現手順
+      description: 問題を再現するための詳細な手順
+      placeholder: |
+        1. pgsd --help を実行
+        2. 特定のオプションを指定
+        3. エラーが発生
+    validations:
+      required: true
+      
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期待される動作
+      description: 本来期待される動作を説明してください
+    validations:
+      required: true
+      
+  - type: textarea
+    id: actual
+    attributes:
+      label: 実際の動作
+      description: 実際に起こった動作を説明してください
+    validations:
+      required: true
+      
+  - type: textarea
+    id: environment
+    attributes:
+      label: 環境情報
+      description: |
+        実行環境の詳細情報
+      placeholder: |
+        - OS: Ubuntu 22.04
+        - Python Version: 3.11.0
+        - PGSD Version: 0.1.0
+        - PostgreSQL Version: 15.2
+      render: markdown
+    validations:
+      required: true
+      
+  - type: textarea
+    id: logs
+    attributes:
+      label: ログ・エラーメッセージ
+      description: 関連するログやエラーメッセージがあれば貼り付けてください
+      render: shell
+      
+  - type: textarea
+    id: additional
+    attributes:
+      label: 追加情報
+      description: その他、問題解決に役立つ情報があれば記載してください

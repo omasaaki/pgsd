@@ -1,0 +1,95 @@
+name: Security
+
+on:
+  schedule:
+    - cron: '0 8 * * 1'  # Weekly on Monday at 8 AM UTC
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'requirements*.txt'
+      - 'pyproject.toml'
+
+jobs:
+  dependency-check:
+    name: Dependency Vulnerability Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          
+      - name: Install security tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install safety pip-audit
+          pip install -r requirements-dev.txt
+          
+      - name: Run safety check
+        run: |
+          safety check --json --output safety-report.json || echo "Safety scan completed with findings"
+          
+      - name: Run pip-audit
+        run: |
+          pip-audit --desc --output audit-report.json --format json || echo "Audit completed with findings"
+          
+      - name: Upload security reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-reports-${{ github.run_id }}
+          path: |
+            safety-report.json
+            audit-report.json
+
+  code-analysis:
+    name: Static Security Analysis
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          
+      - name: Install analysis tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install bandit[toml] semgrep
+          
+      - name: Run bandit
+        run: |
+          bandit -r src/ -f json -o bandit-report.json || echo "Bandit scan completed"
+          
+      - name: Run semgrep
+        run: |
+          semgrep --config=auto src/ --json --output=semgrep-report.json || echo "Semgrep scan completed"
+          
+      - name: Upload analysis reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: analysis-reports-${{ github.run_id }}
+          path: |
+            bandit-report.json
+            semgrep-report.json
+
+  secrets-scan:
+    name: Secrets Detection
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: Run TruffleHog
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: main
+          head: HEAD
+          extra_args: --debug --only-verified
