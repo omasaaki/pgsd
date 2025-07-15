@@ -198,7 +198,7 @@ def setup_logging(config: Optional[LogConfig] = None) -> None:
 
 def reset_logging() -> None:
     """Reset logging configuration (primarily for testing)."""
-    global _is_configured, _logger_registry
+    global _is_configured
     _is_configured = False
     _logger_registry.clear()
 

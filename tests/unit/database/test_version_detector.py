@@ -423,7 +423,9 @@ class TestVersionDetectorEdgeCases:
         """Create mock source connector."""
         connector = Mock(spec=DatabaseConnector)
         connector.get_version = AsyncMock(return_value=PostgreSQLVersion.parse("14.5"))
-        connector.execute_query = AsyncMock(return_value=[{"version": "PostgreSQL 14.5"}])
+        connector.execute_query = AsyncMock(
+            return_value=[{"version": "PostgreSQL 14.5"}]
+        )
         return connector
 
     @pytest.fixture
@@ -431,7 +433,9 @@ class TestVersionDetectorEdgeCases:
         """Create mock target connector."""
         connector = Mock(spec=DatabaseConnector)
         connector.get_version = AsyncMock(return_value=PostgreSQLVersion.parse("13.8"))
-        connector.execute_query = AsyncMock(return_value=[{"version": "PostgreSQL 13.8"}])
+        connector.execute_query = AsyncMock(
+            return_value=[{"version": "PostgreSQL 13.8"}]
+        )
         return connector
 
     @pytest.mark.asyncio

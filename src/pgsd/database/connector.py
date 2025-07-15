@@ -113,9 +113,8 @@ class DatabaseConnector:
         try:
             with self.connection.cursor(cursor_factory=RealDictCursor) as cursor:
                 # Set query timeout
-                cursor.execute(
-                    f"SET statement_timeout = {ConnectionTimeout.DEFAULT_QUERY_TIMEOUT * 1000}"
-                )
+                timeout_ms = ConnectionTimeout.DEFAULT_QUERY_TIMEOUT * 1000
+                cursor.execute(f"SET statement_timeout = {timeout_ms}")
 
                 # Execute query
                 cursor.execute(query, params)

@@ -27,7 +27,7 @@ class TestDiffAnalyzerIntegration:
         users_columns = [
             ColumnInfo(
                 column_name="id",
-                data_type="integer", 
+                data_type="integer",
                 is_nullable=False,
                 column_default="nextval('users_id_seq'::regclass)",
                 character_maximum_length=None,
@@ -35,7 +35,7 @@ class TestDiffAnalyzerIntegration:
                 numeric_scale=0,
                 ordinal_position=1,
                 udt_name="int4",
-                column_comment="Primary key"
+                column_comment="Primary key",
             ),
             ColumnInfo(
                 column_name="username",
@@ -47,7 +47,7 @@ class TestDiffAnalyzerIntegration:
                 numeric_scale=None,
                 ordinal_position=2,
                 udt_name="varchar",
-                column_comment="Username"
+                column_comment="Username",
             ),
             ColumnInfo(
                 column_name="email",
@@ -59,7 +59,7 @@ class TestDiffAnalyzerIntegration:
                 numeric_scale=None,
                 ordinal_position=3,
                 udt_name="varchar",
-                column_comment="Email address"
+                column_comment="Email address",
             ),
             ColumnInfo(
                 column_name="created_at",
@@ -71,8 +71,8 @@ class TestDiffAnalyzerIntegration:
                 numeric_scale=None,
                 ordinal_position=4,
                 udt_name="timestamp",
-                column_comment="Creation timestamp"
-            )
+                column_comment="Creation timestamp",
+            ),
         ]
 
         users_constraints = [
@@ -80,14 +80,14 @@ class TestDiffAnalyzerIntegration:
                 constraint_name="users_pkey",
                 constraint_type="PRIMARY KEY",
                 table_name="users",
-                column_name="id"
+                column_name="id",
             ),
             ConstraintInfo(
                 constraint_name="users_username_unique",
                 constraint_type="UNIQUE",
                 table_name="users",
-                column_name="username"
-            )
+                column_name="username",
+            ),
         ]
 
         users_table = TableInfo(
@@ -98,14 +98,14 @@ class TestDiffAnalyzerIntegration:
             constraints=users_constraints,
             table_comment="User accounts",
             estimated_rows=1000,
-            table_size="48 kB"
+            table_size="48 kB",
         )
 
         return SchemaInfo(
             schema_name="public",
             database_type="source",
             collection_time=datetime(2025, 7, 14, 10, 0, 0),
-            tables=[users_table]
+            tables=[users_table],
         )
 
     @pytest.fixture
@@ -123,7 +123,7 @@ class TestDiffAnalyzerIntegration:
                 numeric_scale=0,
                 ordinal_position=1,
                 udt_name="int4",
-                column_comment="Primary key"
+                column_comment="Primary key",
             ),
             ColumnInfo(
                 column_name="username",
@@ -135,7 +135,7 @@ class TestDiffAnalyzerIntegration:
                 numeric_scale=None,
                 ordinal_position=2,
                 udt_name="varchar",
-                column_comment="Username"
+                column_comment="Username",
             ),
             ColumnInfo(
                 column_name="email",
@@ -147,7 +147,7 @@ class TestDiffAnalyzerIntegration:
                 numeric_scale=None,
                 ordinal_position=3,
                 udt_name="varchar",
-                column_comment="Email address"
+                column_comment="Email address",
             ),
             ColumnInfo(
                 column_name="full_name",  # NEW COLUMN
@@ -159,7 +159,7 @@ class TestDiffAnalyzerIntegration:
                 numeric_scale=None,
                 ordinal_position=4,
                 udt_name="varchar",
-                column_comment="Full name"
+                column_comment="Full name",
             ),
             ColumnInfo(
                 column_name="created_at",
@@ -171,7 +171,7 @@ class TestDiffAnalyzerIntegration:
                 numeric_scale=None,
                 ordinal_position=5,  # Position changed due to new column
                 udt_name="timestamp",
-                column_comment="Creation timestamp"
+                column_comment="Creation timestamp",
             ),
             ColumnInfo(
                 column_name="updated_at",  # NEW COLUMN
@@ -183,8 +183,8 @@ class TestDiffAnalyzerIntegration:
                 numeric_scale=None,
                 ordinal_position=6,
                 udt_name="timestamp",
-                column_comment="Last update timestamp"
-            )
+                column_comment="Last update timestamp",
+            ),
         ]
 
         users_constraints = [
@@ -192,20 +192,20 @@ class TestDiffAnalyzerIntegration:
                 constraint_name="users_pkey",
                 constraint_type="PRIMARY KEY",
                 table_name="users",
-                column_name="id"
+                column_name="id",
             ),
             ConstraintInfo(
                 constraint_name="users_username_unique",
                 constraint_type="UNIQUE",
                 table_name="users",
-                column_name="username"
+                column_name="username",
             ),
             ConstraintInfo(
                 constraint_name="users_email_unique",  # NEW CONSTRAINT
                 constraint_type="UNIQUE",
                 table_name="users",
-                column_name="email"
-            )
+                column_name="email",
+            ),
         ]
 
         users_table = TableInfo(
@@ -216,7 +216,7 @@ class TestDiffAnalyzerIntegration:
             constraints=users_constraints,
             table_comment="User accounts",
             estimated_rows=1500,  # Increased
-            table_size="72 kB"  # Increased
+            table_size="72 kB",  # Increased
         )
 
         # NEW Comments table
@@ -231,7 +231,7 @@ class TestDiffAnalyzerIntegration:
                 numeric_scale=0,
                 ordinal_position=1,
                 udt_name="int4",
-                column_comment="Primary key"
+                column_comment="Primary key",
             ),
             ColumnInfo(
                 column_name="user_id",
@@ -243,7 +243,7 @@ class TestDiffAnalyzerIntegration:
                 numeric_scale=0,
                 ordinal_position=2,
                 udt_name="int4",
-                column_comment="User reference"
+                column_comment="User reference",
             ),
             ColumnInfo(
                 column_name="content",
@@ -255,8 +255,8 @@ class TestDiffAnalyzerIntegration:
                 numeric_scale=None,
                 ordinal_position=3,
                 udt_name="text",
-                column_comment="Comment content"
-            )
+                column_comment="Comment content",
+            ),
         ]
 
         comments_constraints = [
@@ -264,7 +264,7 @@ class TestDiffAnalyzerIntegration:
                 constraint_name="comments_pkey",
                 constraint_type="PRIMARY KEY",
                 table_name="comments",
-                column_name="id"
+                column_name="id",
             ),
             ConstraintInfo(
                 constraint_name="comments_user_id_fkey",
@@ -272,8 +272,8 @@ class TestDiffAnalyzerIntegration:
                 table_name="comments",
                 column_name="user_id",
                 foreign_table_name="users",
-                foreign_column_name="id"
-            )
+                foreign_column_name="id",
+            ),
         ]
 
         comments_table = TableInfo(
@@ -284,40 +284,42 @@ class TestDiffAnalyzerIntegration:
             constraints=comments_constraints,
             table_comment="Post comments",
             estimated_rows=500,
-            table_size="32 kB"
+            table_size="32 kB",
         )
 
         return SchemaInfo(
             schema_name="public",
             database_type="target",
             collection_time=datetime(2025, 7, 14, 10, 30, 0),
-            tables=[users_table, comments_table]
+            tables=[users_table, comments_table],
         )
 
-    def test_realistic_schema_evolution(self, analyzer, sample_schema_v1, sample_schema_v2):
+    def test_realistic_schema_evolution(
+        self, analyzer, sample_schema_v1, sample_schema_v2
+    ):
         """Test realistic schema evolution scenario."""
         result = analyzer.analyze(sample_schema_v1, sample_schema_v2)
-        
+
         # Verify basic structure
         assert len(result.tables["added"]) == 1  # comments table
         assert len(result.tables["removed"]) == 0
         assert len(result.tables["modified"]) == 1  # users table
-        
+
         # Verify added table
         added_table = result.tables["added"][0]
         assert added_table.table_name == "comments"
-        
+
         # Verify modified table
         modified_table = result.tables["modified"][0]
         assert modified_table.name == "users"
-        
+
         # Verify column changes
         assert len(result.columns["added"]) > 0  # New columns added
         assert len(result.columns["modified"]) > 0  # Columns modified
-        
+
         # Verify constraint changes
         assert len(result.constraints["added"]) > 0  # New constraints
-        
+
         # Verify summary
         result.update_summary()
         assert result.summary["total_changes"] > 0
@@ -325,49 +327,53 @@ class TestDiffAnalyzerIntegration:
     def test_performance_medium_schema(self, analyzer):
         """Test performance with medium-sized schemas."""
         import time
-        
+
         # Create medium schemas (10 tables, 5 columns each)
         tables = []
         for i in range(10):
             columns = []
             for j in range(5):
-                columns.append(ColumnInfo(
-                    column_name=f"col_{j}",
-                    data_type="integer",
-                    is_nullable=False,
-                    ordinal_position=j + 1
-                ))
-            
-            tables.append(TableInfo(
-                table_name=f"table_{i}",
-                table_schema="public",
-                table_type="BASE TABLE",
-                columns=columns
-            ))
-        
+                columns.append(
+                    ColumnInfo(
+                        column_name=f"col_{j}",
+                        data_type="integer",
+                        is_nullable=False,
+                        ordinal_position=j + 1,
+                    )
+                )
+
+            tables.append(
+                TableInfo(
+                    table_name=f"table_{i}",
+                    table_schema="public",
+                    table_type="BASE TABLE",
+                    columns=columns,
+                )
+            )
+
         schema_a = SchemaInfo(
             schema_name="public",
             database_type="source",
             collection_time=datetime(2025, 7, 14, 10, 0, 0),
-            tables=tables
+            tables=tables,
         )
-        
+
         schema_b = SchemaInfo(
             schema_name="public",
             database_type="target",
             collection_time=datetime(2025, 7, 14, 10, 0, 0),
-            tables=tables  # Identical
+            tables=tables,  # Identical
         )
-        
+
         start_time = time.time()
         result = analyzer.analyze(schema_a, schema_b)
         end_time = time.time()
-        
+
         execution_time = end_time - start_time
-        
+
         # Should complete reasonably quickly
         assert execution_time < 1.0
-        
+
         # Verify analysis was completed
         assert result.summary["total_changes"] == 0
 
@@ -377,18 +383,18 @@ class TestDiffAnalyzerIntegration:
             schema_name="public",
             database_type="source",
             collection_time=datetime(2025, 7, 14, 10, 0, 0),
-            tables=[]
+            tables=[],
         )
-        
+
         empty_schema_b = SchemaInfo(
             schema_name="public",
             database_type="target",
             collection_time=datetime(2025, 7, 14, 10, 0, 0),
-            tables=[]
+            tables=[],
         )
-        
+
         result = analyzer.analyze(empty_schema_a, empty_schema_b)
-        
+
         assert len(result.tables["added"]) == 0
         assert len(result.tables["removed"]) == 0
         assert len(result.tables["modified"]) == 0

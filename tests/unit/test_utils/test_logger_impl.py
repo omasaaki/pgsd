@@ -316,7 +316,7 @@ class TestLoggingSetup:
         dummy_handler = logging.StreamHandler()
         root_logger.addHandler(dummy_handler)
 
-        initial_count = len(root_logger.handlers)
+        len(root_logger.handlers)
         assert dummy_handler in root_logger.handlers
 
         # Setup logging should clear existing handlers
@@ -346,7 +346,7 @@ class TestResetLogging:
         """Test reset_logging clears all logging state."""
         # Setup logging
         setup_logging()
-        logger = get_logger("test.reset")
+        get_logger("test.reset")
 
         # Verify state exists
         root_logger = logging.getLogger()

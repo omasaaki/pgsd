@@ -352,7 +352,7 @@ class TestErrorPerformance:
         start_time = time.time()
 
         for i in range(1000):
-            error = PGSDError(f"Error {i}", technical_details={"index": i})
+            _ = PGSDError(f"Error {i}", technical_details={"index": i})
 
         end_time = time.time()
         duration = end_time - start_time
@@ -373,7 +373,7 @@ class TestErrorPerformance:
         start_time = time.time()
 
         for _ in range(100):
-            json_str = error.to_json()
+            error.to_json()
 
         end_time = time.time()
         duration = end_time - start_time
@@ -388,13 +388,19 @@ class TestErrorPerformance:
         simple_error = PGSDError("Simple error")
         # Calculate total size including referenced objects and their contents
         simple_size = (
-            sys.getsizeof(simple_error) +
-            sys.getsizeof(simple_error.technical_details) +
-            sys.getsizeof(simple_error.recovery_suggestions) +
-            sys.getsizeof(simple_error.context) +
-            sum(sys.getsizeof(k) + sys.getsizeof(v) for k, v in simple_error.technical_details.items()) +
-            sum(sys.getsizeof(item) for item in simple_error.recovery_suggestions) +
-            sum(sys.getsizeof(k) + sys.getsizeof(v) for k, v in simple_error.context.items())
+            sys.getsizeof(simple_error)
+            + sys.getsizeof(simple_error.technical_details)
+            + sys.getsizeof(simple_error.recovery_suggestions)
+            + sys.getsizeof(simple_error.context)
+            + sum(
+                sys.getsizeof(k) + sys.getsizeof(v)
+                for k, v in simple_error.technical_details.items()
+            )
+            + sum(sys.getsizeof(item) for item in simple_error.recovery_suggestions)
+            + sum(
+                sys.getsizeof(k) + sys.getsizeof(v)
+                for k, v in simple_error.context.items()
+            )
         )
 
         complex_error = PGSDError(
@@ -405,15 +411,23 @@ class TestErrorPerformance:
         )
         # Calculate total size including referenced objects and their contents
         complex_size = (
-            sys.getsizeof(complex_error) +
-            sys.getsizeof(complex_error.technical_details) +
-            sys.getsizeof(complex_error.recovery_suggestions) +
-            sys.getsizeof(complex_error.context) +
-            sum(sys.getsizeof(k) + sys.getsizeof(v) for k, v in complex_error.technical_details.items()) +
-            sum(sys.getsizeof(item) for item in complex_error.recovery_suggestions) +
-            sum(sys.getsizeof(k) + sys.getsizeof(v) for k, v in complex_error.context.items())
+            sys.getsizeof(complex_error)
+            + sys.getsizeof(complex_error.technical_details)
+            + sys.getsizeof(complex_error.recovery_suggestions)
+            + sys.getsizeof(complex_error.context)
+            + sum(
+                sys.getsizeof(k) + sys.getsizeof(v)
+                for k, v in complex_error.technical_details.items()
+            )
+            + sum(sys.getsizeof(item) for item in complex_error.recovery_suggestions)
+            + sum(
+                sys.getsizeof(k) + sys.getsizeof(v)
+                for k, v in complex_error.context.items()
+            )
         )
 
         # Complex error should be larger but not excessively so
         assert complex_size > simple_size
-        assert complex_size < simple_size * 200  # Reasonable upper bound for 200 items (100 dict + 50 list + 50 context)
+        assert (
+            complex_size < simple_size * 200
+        )  # Reasonable upper bound for 200 items (100 dict + 50 list + 50 context)

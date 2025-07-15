@@ -74,7 +74,7 @@ class SchemaInformationCollector:
                     raise DatabasePermissionError(
                         f"No access to schema '{schema_name}'",
                         operation="access_schema",
-                        object_name=schema_name
+                        object_name=schema_name,
                     )
 
                 # Collect all schema information

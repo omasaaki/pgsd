@@ -37,7 +37,10 @@ class InvalidConfigurationError(ConfigurationError):
             expected_type_or_values: Description of expected type or valid values
             config_file: Path to configuration file (optional)
         """
-        message = f"Invalid configuration value for '{config_key}': {invalid_value}. Expected: {expected_type_or_values}"
+        message = (
+            f"Invalid configuration value for '{config_key}': {invalid_value}. "
+            f"Expected: {expected_type_or_values}"
+        )
 
         # Technical details
         technical_details = {

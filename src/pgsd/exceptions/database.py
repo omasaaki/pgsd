@@ -548,7 +548,9 @@ class DatabasePermissionError(DatabaseError):
         ]
 
         if operation:
-            recovery_suggestions.append(f"Grant permissions for '{operation}' operation")
+            recovery_suggestions.append(
+                f"Grant permissions for '{operation}' operation"
+            )
 
         super().__init__(
             message=message,

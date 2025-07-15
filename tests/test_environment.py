@@ -102,7 +102,7 @@ class TestSampleSchemas:
 
         # Verify tables exist
         cursor.execute(
-            f"""
+            """
             SELECT table_name
             FROM information_schema.tables
             WHERE table_schema = %s
@@ -136,7 +136,7 @@ class TestSampleSchemas:
 
         # Verify custom types
         cursor.execute(
-            f"""
+            """
             SELECT typname
             FROM pg_type t
             JOIN pg_namespace n ON t.typnamespace = n.oid
@@ -151,7 +151,7 @@ class TestSampleSchemas:
 
         # Verify views
         cursor.execute(
-            f"""
+            """
             SELECT table_name
             FROM information_schema.views
             WHERE table_schema = %s

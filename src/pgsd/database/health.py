@@ -398,7 +398,7 @@ class HealthMonitor:
                 {
                     "type": "consecutive_failures",
                     "severity": "high",
-                    "message": f"Connection has failed {consecutive_failures} consecutive health checks",
+                    "message": f"Connection failed {consecutive_failures} consecutive health checks",
                     "count": consecutive_failures,
                 }
             )
@@ -412,7 +412,7 @@ class HealthMonitor:
                 {
                     "type": "slow_response",
                     "severity": "medium",
-                    "message": f"Average response time is high: {avg_response_time:.2f}ms",
+                    "message": f"High response time: {avg_response_time:.2f}ms",
                     "avg_response_time": avg_response_time,
                 }
             )
@@ -430,7 +430,7 @@ class HealthMonitor:
                     {
                         "type": "recurring_error",
                         "severity": "medium",
-                        "message": f"Recurring error: {error_type} (occurred {count} times)",
+                        "message": f"Recurring error: {error_type} ({count} times)",
                         "error_type": error_type,
                         "count": count,
                     }

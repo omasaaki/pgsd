@@ -112,10 +112,10 @@ class TestDatabaseConnectionError:
         """Test handling psycopg2 error without pgcode."""
         pg_error = Mock(spec=psycopg2.OperationalError)
         # Explicitly delete pgcode and pgerror attributes if they exist
-        if hasattr(pg_error, 'pgcode'):
-            delattr(pg_error, 'pgcode')
-        if hasattr(pg_error, 'pgerror'):
-            delattr(pg_error, 'pgerror')
+        if hasattr(pg_error, "pgcode"):
+            delattr(pg_error, "pgcode")
+        if hasattr(pg_error, "pgerror"):
+            delattr(pg_error, "pgerror")
 
         error = DatabaseConnectionError.from_psycopg2_error(
             pg_error, host="localhost", port=5432, database="testdb"

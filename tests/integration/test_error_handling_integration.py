@@ -298,7 +298,7 @@ class TestErrorHandlingWithExternalSystems:
 
         try:
             with open(nonexistent_file, "r") as f:
-                content = f.read()
+                _ = f.read()
         except FileNotFoundError as e:
             # Convert to PGSD error
             config_error = MissingConfigurationError(
