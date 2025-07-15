@@ -165,6 +165,7 @@ class DiffResult:
     sequences: Dict[str, List[Any]] = field(default_factory=dict)
     triggers: Dict[str, List[Any]] = field(default_factory=dict)
     summary: Dict[str, int] = field(default_factory=dict)
+    metadata: Dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self):
         """Initialize result dictionaries."""
