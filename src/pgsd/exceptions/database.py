@@ -50,9 +50,15 @@ class DatabaseConnectionError(DatabaseError):
         # Construct error message
         connection_info = f"{host}:{port}"
         if user:
-            message = f"Failed to connect to PostgreSQL database '{database}' at {connection_info} as user '{user}'"
+            message = (
+                f"Failed to connect to PostgreSQL database '{database}' "
+                f"at {connection_info} as user '{user}'"
+            )
         else:
-            message = f"Failed to connect to PostgreSQL database '{database}' at {connection_info}"
+            message = (
+                f"Failed to connect to PostgreSQL database '{database}' "
+                f"at {connection_info}"
+            )
 
         # Technical details
         technical_details = {
@@ -270,7 +276,8 @@ class QueryExecutionError(DatabaseError):
 
         if postgres_error_code:
             recovery_suggestions.append(
-                f"Refer to PostgreSQL error code documentation for '{postgres_error_code}'"
+                f"Refer to PostgreSQL error code documentation for "
+                f"'{postgres_error_code}'"
             )
 
         super().__init__(

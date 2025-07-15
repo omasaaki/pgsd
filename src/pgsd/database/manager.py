@@ -367,7 +367,8 @@ class DatabaseManager:
 
             if version < min_version:
                 raise DatabaseVersionError(
-                    f"Source database version {version} is below minimum supported version {min_version}"
+                    f"Source database version {version} is below minimum "
+                    f"supported version {min_version}"
                 )
 
             # Check permissions
@@ -407,7 +408,8 @@ class DatabaseManager:
 
             if version < min_version:
                 raise DatabaseVersionError(
-                    f"Target database version {version} is below minimum supported version {min_version}"
+                    f"Target database version {version} is below minimum "
+                    f"supported version {min_version}"
                 )
 
             # Check permissions
