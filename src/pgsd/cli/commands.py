@@ -67,18 +67,24 @@ class CompareCommand(BaseCommand):
                 self._show_dry_run_info()
                 return 0
             
-            # Create database configurations
-            source_config = self._create_source_db_config()
-            target_config = self._create_target_db_config()
+            # Use configuration passed from CLI manager
+            if self.config:
+                # Configuration loaded from file or CLI arguments
+                engine = SchemaComparisonEngine(self.config)
+            else:
+                # Fallback to CLI arguments only
+                source_config = self._create_source_db_config()
+                target_config = self._create_target_db_config()
+                
+                from ..config.schema import PGSDConfiguration
+                config = PGSDConfiguration(
+                    source_db=source_config,
+                    target_db=target_config
+                )
+                engine = SchemaComparisonEngine(config)
             
             # Initialize core engine
             self.progress_reporter.show_progress("Initializing engine", 10)
-            from ..config.schema import PGSDConfiguration
-            config = PGSDConfiguration(
-                source_db=source_config,
-                target_db=target_config
-            )
-            engine = SchemaComparisonEngine(config)
             
             # Perform schema analysis
             self.progress_reporter.show_progress("Analyzing schemas", 30)
@@ -86,9 +92,18 @@ class CompareCommand(BaseCommand):
             
             async def run_comparison():
                 await engine.initialize()
+                
+                # スキーマ名を設定から取得
+                if self.config:
+                    source_schema = self.config.source_db.schema
+                    target_schema = self.config.target_db.schema
+                else:
+                    source_schema = self.args.schema or 'public'
+                    target_schema = self.args.schema or 'public'
+                
                 return await engine.compare_schemas(
-                    source_schema=self.args.schema,
-                    target_schema=self.args.schema
+                    source_schema=source_schema,
+                    target_schema=target_schema
                 )
             
             diff_result = asyncio.run(run_comparison())
@@ -110,10 +125,15 @@ class CompareCommand(BaseCommand):
 
     def _validate_arguments(self) -> None:
         """Validate command arguments."""
-        if not self.args.source_db:
-            raise ValueError("Source database is required")
-        if not self.args.target_db:
-            raise ValueError("Target database is required")
+        # 設定ファイルから読み込んだ場合は検証をスキップ
+        if self.config:
+            return
+            
+        # CLI引数が設定されていない場合のみエラーにする
+        if not getattr(self.args, 'source_db', None):
+            raise ValueError("Source database is required when not using config file")
+        if not getattr(self.args, 'target_db', None):
+            raise ValueError("Target database is required when not using config file")
 
     def _show_dry_run_info(self) -> None:
         """Show dry run information."""
@@ -279,7 +299,7 @@ class ValidateCommand(BaseCommand):
             
             # Load and validate configuration
             config_manager = ConfigurationManager(self.args.config)
-            config = config_manager.load_configuration()
+            config = config_manager.load_configuration({})
             
             print(f"Configuration file '{self.args.config}' is valid")
             

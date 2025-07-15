@@ -39,10 +39,10 @@ class DatabaseManager:
         self.logger.info(
             "Database manager initialized",
             extra={
-                "source_host": config.database.source.host,
-                "source_database": config.database.source.database,
-                "target_host": config.database.target.host,
-                "target_database": config.database.target.database,
+                "source_host": config.source_db.host,
+                "source_database": config.source_db.database,
+                "target_host": config.target_db.host,
+                "target_database": config.target_db.database,
             },
         )
 
@@ -61,13 +61,13 @@ class DatabaseManager:
 
             # Create source connection pool
             self.source_pool = ConnectionPool(
-                self.config.database.source,
+                self.config.source_db,
                 max_connections=self.config.system.max_connections,
             )
 
             # Create target connection pool
             self.target_pool = ConnectionPool(
-                self.config.database.target,
+                self.config.target_db,
                 max_connections=self.config.system.max_connections,
             )
 

@@ -73,7 +73,7 @@ class VersionDetector:
                     "Source database version detected",
                     extra={
                         "version": str(self._source_version),
-                        "database": self.database_manager.config.database.source.database,
+                        "database": self.database_manager.config.source_db.database,
                     },
                 )
 
@@ -96,7 +96,7 @@ class VersionDetector:
                     "Target database version detected",
                     extra={
                         "version": str(self._target_version),
-                        "database": self.database_manager.config.database.target.database,
+                        "database": self.database_manager.config.target_db.database,
                     },
                 )
 

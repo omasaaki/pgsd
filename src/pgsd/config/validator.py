@@ -9,6 +9,9 @@ from .schema import (
     PGSDConfiguration,
     DatabaseConfig,
     OutputConfig,
+    SystemConfig,
+    ComparisonConfig,
+    PostgreSQLConfig,
     OutputFormat,
     LogLevel,
     SSLMode,
@@ -74,7 +77,7 @@ class ConfigurationValidator:
             config_dict: Raw configuration dictionary
 
         Returns:
-            Normalized configuration dictionary
+            Normalized configuration dictionary with proper objects
         """
         normalized = {}
 
@@ -83,29 +86,92 @@ class ConfigurationValidator:
                 normalized[section_name] = section_data
                 continue
 
-            normalized_section = {}
+            if section_name == "source_db":
+                # Create DatabaseConfig object for source database
+                normalized_section = self._normalize_db_config(section_data)
+                normalized[section_name] = DatabaseConfig(**normalized_section)
+            elif section_name == "target_db":
+                # Create DatabaseConfig object for target database
+                normalized_section = self._normalize_db_config(section_data)
+                normalized[section_name] = DatabaseConfig(**normalized_section)
+            elif section_name == "output":
+                # Create OutputConfig object
+                normalized_section = self._normalize_output_config(section_data)
+                normalized[section_name] = OutputConfig(**normalized_section)
+            elif section_name == "system":
+                # Create SystemConfig object
+                normalized_section = self._normalize_system_config(section_data)
+                normalized[section_name] = SystemConfig(**normalized_section)
+            elif section_name == "comparison":
+                # Create ComparisonConfig object
+                normalized[section_name] = ComparisonConfig(**section_data)
+            elif section_name == "postgresql":
+                # Create PostgreSQLConfig object
+                normalized[section_name] = PostgreSQLConfig(**section_data)
+            else:
+                # For other sections, just pass through
+                normalized[section_name] = section_data
 
-            for key, value in section_data.items():
-                if section_name == "output" and key == "format":
-                    # Convert output format string to enum
-                    normalized_section[key] = self._convert_to_enum(
-                        value, OutputFormat, f"output.{key}"
-                    )
-                elif section_name == "system" and key == "log_level":
-                    # Convert log level string to enum
-                    normalized_section[key] = self._convert_to_enum(
-                        value, LogLevel, f"system.{key}"
-                    )
-                elif section_name in ["source_db", "target_db"] and key == "ssl_mode":
-                    # Convert SSL mode string to enum
-                    normalized_section[key] = self._convert_to_enum(
-                        value, SSLMode, f"{section_name}.{key}"
-                    )
-                else:
-                    normalized_section[key] = value
+        return normalized
 
-            normalized[section_name] = normalized_section
+    def _normalize_db_config(self, db_config: Dict[str, Any]) -> Dict[str, Any]:
+        """Normalize database configuration.
+        
+        Args:
+            db_config: Database configuration dictionary
+            
+        Returns:
+            Normalized database configuration
+        """
+        normalized = {}
+        for key, value in db_config.items():
+            if key == "ssl_mode":
+                # Convert SSL mode string to enum
+                normalized[key] = self._convert_to_enum(
+                    value, SSLMode, f"database.{key}"
+                )
+            else:
+                normalized[key] = value
+        return normalized
 
+    def _normalize_output_config(self, output_config: Dict[str, Any]) -> Dict[str, Any]:
+        """Normalize output configuration.
+        
+        Args:
+            output_config: Output configuration dictionary
+            
+        Returns:
+            Normalized output configuration
+        """
+        normalized = {}
+        for key, value in output_config.items():
+            if key == "format":
+                # Convert output format string to enum
+                normalized[key] = self._convert_to_enum(
+                    value, OutputFormat, f"output.{key}"
+                )
+            else:
+                normalized[key] = value
+        return normalized
+
+    def _normalize_system_config(self, system_config: Dict[str, Any]) -> Dict[str, Any]:
+        """Normalize system configuration.
+        
+        Args:
+            system_config: System configuration dictionary
+            
+        Returns:
+            Normalized system configuration
+        """
+        normalized = {}
+        for key, value in system_config.items():
+            if key == "log_level":
+                # Convert log level string to enum
+                normalized[key] = self._convert_to_enum(
+                    value, LogLevel, f"system.{key}"
+                )
+            else:
+                normalized[key] = value
         return normalized
 
     def _convert_to_enum(self, value: Any, enum_class: type, config_key: str):
