@@ -45,8 +45,15 @@ def signal_handler(signum, frame):
 
 def setup_signal_handlers():
     """Setup signal handlers for graceful shutdown."""
-    signal.signal(signal.SIGINT, signal_handler)
-    signal.signal(signal.SIGTERM, signal_handler)
+    try:
+        # Signal handlers only work in main thread
+        import threading
+        if threading.current_thread() is threading.main_thread():
+            signal.signal(signal.SIGINT, signal_handler)
+            signal.signal(signal.SIGTERM, signal_handler)
+    except (ValueError, OSError):
+        # Signal setup may fail in some environments (tests, threads, etc.)
+        pass
 
 
 def setup_application():

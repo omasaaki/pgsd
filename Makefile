@@ -6,9 +6,10 @@
 help:
 	@echo "PostgreSQL Schema Diff Tool - Test Commands"
 	@echo "==========================================="
-	@echo "make test           - Run all tests"
-	@echo "make test-unit      - Run unit tests only"
-	@echo "make test-integration - Run integration tests"
+	@echo "make test           - Run all tests (requires Docker)"
+	@echo "make test-unit      - Run unit tests only (no Docker)"
+	@echo "make test-integration - Run integration tests (requires Docker)"
+	@echo "make test-no-db     - Run tests without database (no Docker)"
 	@echo "make test-pg13      - Run tests against PostgreSQL 13"
 	@echo "make test-pg14      - Run tests against PostgreSQL 14"
 	@echo "make test-pg15      - Run tests against PostgreSQL 15"
@@ -17,6 +18,7 @@ help:
 	@echo "make coverage       - Generate coverage report"
 	@echo "make docker-up      - Start test containers"
 	@echo "make docker-down    - Stop test containers"
+	@echo "make docker-check   - Check Docker availability"
 	@echo "make clean          - Clean test artifacts"
 
 # Test environment setup
@@ -42,7 +44,18 @@ test: docker-up
 
 test-unit:
 	@echo "Running unit tests..."
-	@pytest -m unit --cov-fail-under=0
+	@PYTHONPATH=src pytest tests/unit/ -v --cov-fail-under=0
+
+test-no-db:
+	@echo "Running tests without database..."
+	@PYTHONPATH=src SKIP_DB_TESTS=true pytest tests/ -v -m "not db"
+
+docker-check:
+	@echo "Checking Docker availability..."
+	@command -v docker >/dev/null 2>&1 || { echo "❌ Docker is not installed"; exit 1; }
+	@command -v docker-compose >/dev/null 2>&1 || { echo "❌ Docker Compose is not installed"; exit 1; }
+	@docker info >/dev/null 2>&1 || { echo "❌ Docker daemon is not running"; exit 1; }
+	@echo "✅ Docker environment is ready"
 
 test-integration: docker-up
 	@echo "Running integration tests..."
