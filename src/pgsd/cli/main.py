@@ -87,7 +87,16 @@ class CLIManager:
         """Add compare command parser."""
         compare_parser = subparsers.add_parser(
             'compare',
-            help='Compare schemas between two databases'
+            help='Compare schemas between two databases',
+            description='''
+Compare PostgreSQL schemas between two databases and generate a detailed report.
+
+Examples:
+  pgsd compare --source-host localhost --source-db db1 --target-host localhost --target-db db2
+  pgsd compare --config config.yaml --schema public --format html
+  pgsd compare --source-host prod.example.com --source-db prod --target-host staging.example.com --target-db staging --output ./reports
+            ''',
+            epilog='For more examples, see: https://github.com/omasaaki/pgsd/blob/main/docs/EXAMPLES.md'
         )
         
         # Source database options
@@ -171,7 +180,15 @@ class CLIManager:
         """Add list-schemas command parser."""
         list_parser = subparsers.add_parser(
             'list-schemas',
-            help='List available schemas in a database'
+            help='List available schemas in a database',
+            description='''
+List all schemas available in a PostgreSQL database.
+
+Examples:
+  pgsd list-schemas --host localhost --db mydb --user postgres
+  pgsd list-schemas --host prod.example.com --db maindb
+            ''',
+            epilog='Use this to discover available schemas before comparison.'
         )
         
         list_parser.add_argument(
@@ -203,7 +220,15 @@ class CLIManager:
         """Add validate command parser."""
         validate_parser = subparsers.add_parser(
             'validate',
-            help='Validate configuration file'
+            help='Validate configuration file',
+            description='''
+Validate a PGSD configuration file for syntax and content errors.
+
+Examples:
+  pgsd validate --config config.yaml
+  pgsd validate --config /etc/pgsd/production.yml
+            ''',
+            epilog='Returns exit code 0 for valid config, 1 for errors.'
         )
         
         validate_parser.add_argument(
@@ -216,7 +241,14 @@ class CLIManager:
         """Add version command parser."""
         subparsers.add_parser(
             'version',
-            help='Show version information'
+            help='Show version information',
+            description='''
+Show PGSD version, build information, and supported PostgreSQL versions.
+
+Examples:
+  pgsd version
+            ''',
+            epilog='Useful for troubleshooting and bug reports.'
         )
 
     def run(self, args: Optional[List[str]] = None) -> int:
