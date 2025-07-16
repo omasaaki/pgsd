@@ -11,6 +11,7 @@ from jinja2 import Template
 
 from .base import BaseReporter, ReportFormat, ReportMetadata, ReportConfig
 from .templates import BuiltinTemplates
+from .grouping import group_changes_by_table, get_table_summary, GroupedDiffResult
 from ..core.analyzer import DiffResult
 from ..exceptions.processing import ProcessingError
 
@@ -66,9 +67,12 @@ class MarkdownReporter(BaseReporter):
             # Prepare template context
             context = self._prepare_template_context(diff_result, metadata)
             
-            # Generate details content
-            details_content = self._generate_details_content(diff_result)
-            context["content"] = details_content
+            # Generate details content only if not using table grouping
+            if not self.config.group_by_table:
+                details_content = self._generate_details_content(diff_result)
+                context["content"] = details_content
+            else:
+                context["content"] = ""  # Empty content for grouped view
             
             # Render template
             markdown_content = template.render(**context)
@@ -122,12 +126,28 @@ class MarkdownReporter(BaseReporter):
             "generator_version": metadata.generator_version,
         }
         
-        return {
+        # Prepare grouped data if table grouping is enabled
+        context = {
             "metadata": template_metadata,
             "summary": summary,
             "diff_result": diff_result,
             "config": self.config,
         }
+        
+        if self.config.group_by_table:
+            grouped_result = group_changes_by_table(diff_result)
+            context.update({
+                "grouped_result": grouped_result,
+                "table_summaries": {
+                    table.table_name: get_table_summary(table) 
+                    for table in grouped_result.all_tables
+                },
+                "use_table_grouping": True,
+            })
+        else:
+            context["use_table_grouping"] = False
+            
+        return context
 
     def _generate_summary(self, diff_result: DiffResult) -> Dict[str, Any]:
         """Generate summary statistics from diff result.
