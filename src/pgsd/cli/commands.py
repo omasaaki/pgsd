@@ -298,9 +298,10 @@ class ValidateCommand(BaseCommand):
             
             from ..config.manager import ConfigurationManager
             
-            # Load and validate configuration
+            # Load and validate configuration  
             config_manager = ConfigurationManager(self.args.config)
-            config = config_manager.load_configuration({})
+            # Don't pass CLI args to avoid conflicts with 'config' parameter
+            config = config_manager.load_configuration()
             
             print(f"Configuration file '{self.args.config}' is valid")
             

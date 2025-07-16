@@ -41,7 +41,12 @@ class ConfigurationValidator:
         try:
             # Normalize and convert enum values
             normalized_config = self._normalize_config(config_dict)
-
+            
+            # Remove any 'config' key that might have been added
+            if 'config' in normalized_config:
+                self.logger.warning("Removing unexpected 'config' key from normalized configuration")
+                normalized_config.pop('config')
+            
             # Create configuration object (this handles basic validation)
             config = PGSDConfiguration(**normalized_config)
 

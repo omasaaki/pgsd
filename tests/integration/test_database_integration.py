@@ -43,6 +43,11 @@ class TestDatabaseConnection:
             
             conn.close()
                 
+        except psycopg2.OperationalError as e:
+            if "Connection refused" in str(e) or "could not connect" in str(e):
+                pytest.skip("PostgreSQL server is not running")
+            else:
+                pytest.fail(f"Database connection test failed: {e}")
         except Exception as e:
             pytest.fail(f"Database connection test failed: {e}")
 
@@ -93,6 +98,11 @@ class TestDatabaseConnection:
             
             conn.close()
                 
+        except psycopg2.OperationalError as e:
+            if "Connection refused" in str(e) or "could not connect" in str(e):
+                pytest.skip(f"PostgreSQL {postgres_version['version']} server is not running")
+            else:
+                pytest.fail(f"PostgreSQL {postgres_version['version']} connection test failed: {e}")
         except Exception as e:
             pytest.fail(f"PostgreSQL {postgres_version['version']} connection test failed: {e}")
 

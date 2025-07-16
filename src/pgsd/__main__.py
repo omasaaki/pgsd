@@ -15,7 +15,7 @@ from .main import main
 
 if __name__ == "__main__":
     try:
-        exit_code = main()
+        exit_code = main(sys.argv[1:])  # Pass command line arguments
         sys.exit(exit_code)
     except KeyboardInterrupt:
         print("\nOperation cancelled by user", file=sys.stderr)

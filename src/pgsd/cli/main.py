@@ -243,7 +243,7 @@ Examples:
 
     def _add_version_parser(self, subparsers):
         """Add version command parser."""
-        subparsers.add_parser(
+        version_parser = subparsers.add_parser(
             'version',
             help='Show version information',
             description='''
@@ -251,8 +251,15 @@ Show PGSD version, build information, and supported PostgreSQL versions.
 
 Examples:
   pgsd version
+  pgsd version --verbose
             ''',
             epilog='Useful for troubleshooting and bug reports.'
+        )
+        
+        version_parser.add_argument(
+            '--verbose', '-v',
+            action='store_true',
+            help='Show detailed version information'
         )
 
     def run(self, args: Optional[List[str]] = None) -> int:
@@ -270,6 +277,22 @@ Examples:
             
             # Configure logging
             self._configure_logging(parsed_args)
+            
+            # Check if command was provided
+            if not hasattr(parsed_args, 'command') or parsed_args.command is None:
+                self.parser.print_help()
+                return 2
+            
+            # Load configuration (skip for version and validate commands)
+            if parsed_args.command in ('version', 'validate'):
+                config = None
+            else:
+                config_manager = ConfigurationManager(getattr(parsed_args, 'config', None))
+                cli_args = self._filter_config_args(parsed_args)
+                config = config_manager.load_configuration(cli_args)
+            
+            # Execute command
+            return self._execute_command(parsed_args, config)
         except SystemExit as e:
             # If we get a SystemExit during parsing, check if we have config file
             actual_args = args if args is not None else sys.argv[1:]
@@ -285,22 +308,6 @@ Examples:
             else:
                 # Re-raise the SystemExit if no config file
                 raise
-            
-            # Check if command was provided
-            if not hasattr(parsed_args, 'command') or parsed_args.command is None:
-                self.parser.print_help()
-                return 2
-            
-            # Load configuration (skip for version command)
-            if parsed_args.command == 'version':
-                config = None
-            else:
-                config_manager = ConfigurationManager(parsed_args.config)
-                cli_args = self._filter_config_args(parsed_args)
-                config = config_manager.load_configuration(cli_args)
-            
-            # Execute command
-            return self._execute_command(parsed_args, config)
             
         except KeyboardInterrupt:
             logger.info("Operation cancelled by user")

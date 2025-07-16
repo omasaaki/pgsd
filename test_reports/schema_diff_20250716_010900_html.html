@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PostgreSQL Schema Diff Report</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+        h2 {
+            color: #34495e;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+        .metadata {
+            background: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 25px;
+        }
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .summary-card {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .summary-card h3 {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+            font-size: 0.9em;
+            text-transform: uppercase;
+        }
+        .summary-card .count {
+            font-size: 2em;
+            font-weight: bold;
+            color: #3498db;
+        }
+        .change-list {
+            margin-bottom: 25px;
+        }
+        .change-item {
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        .added {
+            background-color: #d4edda;
+            border-left: 4px solid #28a745;
+            color: #155724;
+        }
+        .removed {
+            background-color: #f8d7da;
+            border-left: 4px solid #dc3545;
+            color: #721c24;
+        }
+        .modified {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            color: #856404;
+        }
+        .details {
+            margin-left: 20px;
+            font-size: 0.85em;
+            color: #666;
+        }
+        .no-changes {
+            text-align: center;
+            color: #6c757d;
+            font-style: italic;
+            padding: 20px;
+        }
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            text-align: center;
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+        .table-group {
+            margin-bottom: 30px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .table-header {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-bottom: 1px solid #ddd;
+            cursor: pointer;
+            position: relative;
+        }
+        .table-header:hover {
+            background: #e9ecef;
+        }
+        .table-header h3 {
+            margin: 0;
+            color: #2c3e50;
+            display: inline-block;
+        }
+        .table-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .table-badge.added {
+            background: #d4edda;
+            color: #155724;
+        }
+        .table-badge.removed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .table-badge.modified {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .table-content {
+            padding: 20px;
+            display: none;
+        }
+        .table-content.expanded {
+            display: block;
+        }
+        .change-section {
+            margin-bottom: 20px;
+        }
+        .change-section h4 {
+            margin: 0 0 10px 0;
+            color: #495057;
+            font-size: 1em;
+        }
+        .change-detail {
+            padding: 5px 10px;
+            margin: 3px 0;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            background: #f8f9fa;
+            border-left: 3px solid #dee2e6;
+        }
+        .toggle-icon {
+            float: right;
+            transition: transform 0.2s;
+        }
+        .toggle-icon.expanded {
+            transform: rotate(180deg);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PostgreSQL Schema Diff Report</h1>
+
+        <div class="metadata">
+            <strong>Generated:</strong> 2025-07-16 01:09:00 UTC<br>
+            <strong>Source:</strong> 
+                test_source.public<br>
+            <strong>Target:</strong> 
+                test_target.public<br>
+            <strong>Analysis Time:</strong> 
+                0.000 seconds
+        </div>
+
+        <div class="summary">
+            <div class="summary-card">
+                <h3>Total Changes</h3>
+                <div class="count">9</div>
+            </div>
+            <div class="summary-card">
+                <h3>Tables</h3>
+                <div class="count">3</div>
+            </div>
+            <div class="summary-card">
+                <h3>Columns</h3>
+                <div class="count">4</div>
+            </div>
+            <div class="summary-card">
+                <h3>Constraints</h3>
+                <div class="count">1</div>
+            </div>
+        </div>
+
+        
+            
+                <h2>Schema Changes by Table</h2>
+                
+                    
+                    
+                        <h3>Tables Added (1)</h3>
+                        
+                            <div class="table-group">
+                                <div class="table-header" onclick="toggleTable('new_table_added')">
+                                    <h3>new_table</h3>
+                                    <span class="table-badge added">ADDED</span>
+                                    
+                                    <span class="toggle-icon" id="icon_new_table_added">▼</span>
+                                </div>
+                                <div class="table-content" id="content_new_table_added">
+                                    
+                                        <div class="change-section">
+                                            <h4>Table Added</h4>
+                                            <div class="change-detail">
+                                                Table "new_table" was added
+                                                
+                                                    (2 columns)
+                                                
+                                            </div>
+                                        </div>
+                                    
+                                </div>
+                            </div>
+                        
+                    
+                
+                    
+                    
+                        <h3>Tables Removed (1)</h3>
+                        
+                            <div class="table-group">
+                                <div class="table-header" onclick="toggleTable('old_table_removed')">
+                                    <h3>old_table</h3>
+                                    <span class="table-badge removed">REMOVED</span>
+                                    
+                                    <span class="toggle-icon" id="icon_old_table_removed">▼</span>
+                                </div>
+                                <div class="table-content" id="content_old_table_removed">
+                                    
+                                        <div class="change-section">
+                                            <h4>Table Removed</h4>
+                                            <div class="change-detail">
+                                                Table "old_table" was removed
+                                                
+                                                    (1 columns)
+                                                
+                                            </div>
+                                        </div>
+                                    
+                                </div>
+                            </div>
+                        
+                    
+                
+                    
+                    
+                        <h3>Tables Modified (2)</h3>
+                        
+                            <div class="table-group">
+                                <div class="table-header" onclick="toggleTable('user_table_modified')">
+                                    <h3>user_table</h3>
+                                    <span class="table-badge modified">MODIFIED</span>
+                                    
+                                        <span class="table-badge modified">5 changes</span>
+                                    
+                                    <span class="toggle-icon" id="icon_user_table_modified">▼</span>
+                                </div>
+                                <div class="table-content" id="content_user_table_modified">
+                                    
+                                        
+                                            
+                                                <div class="change-section">
+                                                    <h4>Columns Added (1)</h4>
+                                                    
+                                                        <div class="change-detail">user_table.created_at (timestamp)</div>
+                                                    
+                                                </div>
+                                            
+                                        
+                                            
+                                                <div class="change-section">
+                                                    <h4>Columns Removed (1)</h4>
+                                                    
+                                                        <div class="change-detail">user_table.legacy_field (text)</div>
+                                                    
+                                                </div>
+                                            
+                                        
+                                            
+                                                <div class="change-section">
+                                                    <h4>Columns Modified (1)</h4>
+                                                    
+                                                        <div class="change-detail">user_table.email (varchar(255))</div>
+                                                    
+                                                </div>
+                                            
+                                        
+                                            
+                                                <div class="change-section">
+                                                    <h4>Constraints Added (1)</h4>
+                                                    
+                                                        <div class="change-detail">user_table.fk_user_profile</div>
+                                                    
+                                                </div>
+                                            
+                                        
+                                            
+                                        
+                                            
+                                        
+                                            
+                                                <div class="change-section">
+                                                    <h4>Indexes Added (1)</h4>
+                                                    
+                                                        <div class="change-detail">user_table.idx_user_email</div>
+                                                    
+                                                </div>
+                                            
+                                        
+                                            
+                                        
+                                            
+                                        
+                                            
+                                        
+                                            
+                                        
+                                            
+                                        
+                                    
+                                </div>
+                            </div>
+                        
+                            <div class="table-group">
+                                <div class="table-header" onclick="toggleTable('new_table_modified')">
+                                    <h3>new_table</h3>
+                                    <span class="table-badge modified">MODIFIED</span>
+                                    
+                                        <span class="table-badge modified">1 changes</span>
+                                    
+                                    <span class="toggle-icon" id="icon_new_table_modified">▼</span>
+                                </div>
+                                <div class="table-content" id="content_new_table_modified">
+                                    
+                                        
+                                            
+                                                <div class="change-section">
+                                                    <h4>Columns Added (1)</h4>
+                                                    
+                                                        <div class="change-detail">new_table.status (varchar)</div>
+                                                    
+                                                </div>
+                                            
+                                        
+                                            
+                                        
+                                            
+                                        
+                                            
+                                        
+                                            
+                                        
+                                            
+                                        
+                                            
+                                        
+                                            
+                                        
+                                            
+                                        
+                                            
+                                        
+                                            
+                                        
+                                            
+                                        
+                                    
+                                </div>
+                            </div>
+                        
+                    
+                
+
+                
+            
+        
+
+        <div class="footer">
+            Generated by PGSD v1.0.0 at 2025-07-16 01:09:00 UTC
+        </div>
+    </div>
+
+    <script>
+        function toggleTable(tableId) {
+            const content = document.getElementById('content_' + tableId);
+            const icon = document.getElementById('icon_' + tableId);
+
+            if (content.classList.contains('expanded')) {
+                content.classList.remove('expanded');
+                icon.classList.remove('expanded');
+                icon.textContent = '▼';
+            } else {
+                content.classList.add('expanded');
+                icon.classList.add('expanded');
+                icon.textContent = '▲';
+            }
+        }
+
+        // Auto-expand if only a few tables or if config says so
+        document.addEventListener('DOMContentLoaded', function() {
+            const tableGroups = document.querySelectorAll('.table-group');
+            if (tableGroups.length <= 3 || false === false) {
+                tableGroups.forEach(function(group) {
+                    const header = group.querySelector('.table-header');
+                    if (header && header.onclick) {
+                        const tableId = header.onclick.toString().match(/'([^']+)'/)[1];
+                        toggleTable(tableId);
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+# PostgreSQL Schema Diff Tool Configuration
+# DB1 (ntb) vs DB2 (ntb_demo3) comparison
+
+source_db:
+  host: "localhost"
+  port: 5432
+  database: "ntb"
+  schema: "ntb"
+  username: "ntb"
+  password: "ntb"
+
+target_db:
+  host: "localhost"
+  port: 5432
+  database: "ntb_demo3"
+  schema: "ntb_demo3"
+  username: "ntb_demo3"
+  password: "ntb_demo3"
+
+output:
+  format: "html"
+  path: "reports/"
+
+system:
+  timezone: "UTC"
+  log_level: "INFO"
+  log_file: "logs/pgsd.log"

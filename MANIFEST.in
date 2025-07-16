@@ -1,0 +1,75 @@
+# Include important project files
+include README.md
+include LICENSE
+include CHANGELOG.md
+include requirements.txt
+include requirements-dev.txt
+include pyproject.toml
+include setup.py
+include setup.cfg
+include pytest.ini
+include Makefile
+
+# Include documentation
+recursive-include docs *.md *.rst *.txt
+recursive-include docs *.html *.css *.js
+recursive-include docs *.png *.jpg *.svg
+
+# Include configuration examples
+recursive-include config *.yaml *.yml *.json
+recursive-include examples *.yaml *.yml *.json *.py *.sh
+
+# Include project management files (optional for development reference)
+recursive-include project_management *.md
+
+# Include scripts
+recursive-include scripts *.sh *.py
+
+# Include test data and fixtures (exclude test outputs)
+recursive-include tests *.py *.yaml *.json *.sql
+recursive-include tests/fixtures *
+exclude tests/test_*.pyc
+exclude tests/__pycache__
+
+# Include Docker configuration
+recursive-include docker *.yml *.yaml *.sql *.sh
+
+# Exclude development and build artifacts
+exclude .gitignore
+exclude .python-version
+exclude .env
+exclude .env.*
+exclude tox.ini
+exclude .coveragerc
+exclude .mypy.ini
+exclude .pre-commit-config.yaml
+
+# Exclude compiled files and cache
+global-exclude *.pyc
+global-exclude *.pyo
+global-exclude *.pyd
+global-exclude __pycache__
+global-exclude .pytest_cache
+global-exclude .mypy_cache
+global-exclude .coverage
+global-exclude htmlcov
+global-exclude .tox
+global-exclude *.egg-info
+global-exclude build
+global-exclude dist
+global-exclude .git
+global-exclude .vscode
+global-exclude .idea
+
+# Exclude OS-specific files
+global-exclude .DS_Store
+global-exclude Thumbs.db
+global-exclude *.tmp
+global-exclude *.swp
+global-exclude *.swo
+global-exclude *~
+
+# Exclude log files and temporary reports
+global-exclude *.log
+global-exclude reports
+global-exclude temp
