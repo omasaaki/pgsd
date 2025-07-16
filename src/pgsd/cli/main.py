@@ -154,7 +154,15 @@ Examples:
         compare_group.add_argument(
             '--schema',
             default='public',
-            help='Schema to compare (default: public)'
+            help='Schema to compare for both databases (default: public)'
+        )
+        compare_group.add_argument(
+            '--source-schema',
+            help='Source database schema name (overrides --schema for source)'
+        )
+        compare_group.add_argument(
+            '--target-schema',
+            help='Target database schema name (overrides --schema for target)'
         )
         compare_group.add_argument(
             '--output', '-o',
@@ -488,7 +496,15 @@ Examples:
         compare_group.add_argument(
             '--schema',
             default='public',
-            help='Schema to compare (default: public)'
+            help='Schema to compare for both databases (default: public)'
+        )
+        compare_group.add_argument(
+            '--source-schema',
+            help='Source database schema name (overrides --schema for source)'
+        )
+        compare_group.add_argument(
+            '--target-schema',
+            help='Target database schema name (overrides --schema for target)'
         )
         compare_group.add_argument(
             '--output', '-o',

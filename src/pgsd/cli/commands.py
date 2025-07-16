@@ -98,8 +98,9 @@ class CompareCommand(BaseCommand):
                     source_schema = self.config.source_db.schema
                     target_schema = self.config.target_db.schema
                 else:
-                    source_schema = self.args.schema or 'public'
-                    target_schema = self.args.schema or 'public'
+                    # 個別指定がある場合は優先、なければ共通の--schemaを使用
+                    source_schema = self.args.source_schema or self.args.schema or 'public'
+                    target_schema = self.args.target_schema or self.args.schema or 'public'
                 
                 return await engine.compare_schemas(
                     source_schema=source_schema,
