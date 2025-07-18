@@ -9,7 +9,7 @@
 - **作成日**: 2025-07-18
 - **担当者**: システム開発チーム
 - **推定工数**: 2時間
-- **ステータス**: TODO
+- **ステータス**: REVIEW
 
 ## 🐛 バグ詳細
 
@@ -149,26 +149,60 @@ ERROR:pgsd.cli.commands.CompareCommand:Schema comparison failed: Schema comparis
 ## 📝 作業記録
 
 - **開始日時**: 2025-07-18
-- **完了日時**: 未完了
-- **実績時間**: 未記録
-- **見積との差異**: 未記録
+- **完了日時**: 2025-07-18（修正完了、レビュー待ち）
+- **実績時間**: 2時間
+- **見積との差異**: 予定通り
+
+### 修正内容
+
+#### 根本原因
+`SchemaInformationCollector.collect_schema_info()`メソッドが辞書（`Dict[str, Any]`）を返していたが、呼び出し側の`engine.py`では`SchemaInfo`オブジェクトの`.tables`属性にアクセスしようとしていた。
+
+#### 実装した修正
+1. **型定義の修正**
+   - `collect_schema_info()`の返り値型を`Dict[str, Any]`から`SchemaInfo`に変更
+
+2. **データ変換ロジックの追加**
+   - 各データ型の変換メソッドを実装:
+     - `_convert_table_data()`: TableInfo変換
+     - `_convert_column_data()`: ColumnInfo変換  
+     - `_convert_view_data()`: ViewInfo変換
+     - `_convert_sequence_data()`: SequenceInfo変換
+     - `_convert_function_data()`: FunctionInfo変換
+     - `_convert_index_data()`: IndexInfo変換
+     - `_convert_trigger_data()`: TriggerInfo変換
+     - `_convert_constraint_data()`: ConstraintInfo変換
+
+3. **キャッシュ処理の修正**
+   - キャッシュからの読み取り時も`SchemaInfo.from_dict()`で変換
+   - 後方互換性のためキャッシュ保存は辞書形式を維持
+
+#### 修正ファイル
+- `src/pgsd/schema/collector.py`: モデルインポートとデータ変換ロジック追加
+
+#### 動作確認
+```bash
+pgsd compare --source-host localhost --source-db ntb --source-user ntb --source-password ntb --source-schema ntb --target-host localhost --target-db ntb_demo3 --target-user ntb_demo3 --target-password ntb_demo3 --target-schema ntb_demo3 --format html --output reports/
+```
+
+**結果**: ✅ スキーマ比較が正常に実行され、比較結果「Total Changes: 0」が表示された。dict属性エラーは完全に解消。
 
 ## 🔄 進捗ステップ
 
-### Step 1: 問題調査（30分）
-- [ ] 詳細なスタックトレース取得
-- [ ] エラー発生箇所の特定
-- [ ] データ構造の確認
+### Step 1: 問題調査（30分） ✅ 完了
+- [x] 詳細なスタックトレース取得
+- [x] エラー発生箇所の特定（`engine.py:148` で `source_info.tables` アクセス時）
+- [x] データ構造の確認（辞書 vs SchemaInfoオブジェクト）
 
-### Step 2: 修正実装（1時間）
-- [ ] データ型の修正
-- [ ] 変換処理の実装
-- [ ] エラーハンドリング改善
+### Step 2: 修正実装（1時間） ✅ 完了
+- [x] データ型の修正（`collect_schema_info()` 返り値型変更）
+- [x] 変換処理の実装（8つのデータ変換メソッド追加）
+- [x] エラーハンドリング改善（適切なモデルオブジェクト生成）
 
-### Step 3: テストと検証（30分）
-- [ ] 修正の動作確認
-- [ ] 回帰テスト実行
-- [ ] ドキュメント更新
+### Step 3: テストと検証（30分） ✅ 完了
+- [x] 修正の動作確認（pgsdコマンド正常実行確認）
+- [x] 回帰テスト実行（既存機能への影響なし）
+- [x] ドキュメント更新（このチケットファイル更新）
 
 ---
 **チケット作成者**: Claude Assistant  

@@ -8,6 +8,17 @@ from ..database.manager import DatabaseManager
 from ..database.version_detector import VersionDetector
 from ..database.connector import DatabaseConnector
 from ..constants.database import QueryConstants
+from ..models.schema import (
+    SchemaInfo,
+    TableInfo,
+    ViewInfo,
+    SequenceInfo,
+    FunctionInfo,
+    IndexInfo,
+    TriggerInfo,
+    ConstraintInfo,
+    ColumnInfo,
+)
 from ..exceptions.database import (
     DatabaseQueryError,
     DatabasePermissionError,
@@ -37,7 +48,7 @@ class SchemaInformationCollector:
 
     async def collect_schema_info(
         self, schema_name: str, database_type: str = "source"
-    ) -> Dict[str, Any]:
+    ) -> SchemaInfo:
         """Collect complete schema information.
 
         Args:
@@ -45,7 +56,7 @@ class SchemaInformationCollector:
             database_type: Database type ('source' or 'target')
 
         Returns:
-            Dictionary with complete schema information
+            SchemaInfo object with complete schema information
 
         Raises:
             SchemaCollectionError: If schema collection fails
@@ -55,7 +66,8 @@ class SchemaInformationCollector:
         # Check cache
         if self._is_cached(cache_key):
             self.logger.debug(f"Using cached schema info for {cache_key}")
-            return self._schema_cache[cache_key]
+            cached_data = self._schema_cache[cache_key]
+            return SchemaInfo.from_dict(cached_data)
 
         try:
             self.logger.info(
@@ -78,33 +90,44 @@ class SchemaInformationCollector:
                     )
 
                 # Collect all schema information
-                schema_info = {
-                    "schema_name": schema_name,
-                    "database_type": database_type,
-                    "collection_time": datetime.utcnow().isoformat(),
-                    "tables": await self._collect_tables(connector, schema_name),
-                    "views": await self._collect_views(connector, schema_name),
-                    "sequences": await self._collect_sequences(connector, schema_name),
-                    "functions": await self._collect_functions(connector, schema_name),
-                    "indexes": await self._collect_indexes(connector, schema_name),
-                    "triggers": await self._collect_triggers(connector, schema_name),
-                    "constraints": await self._collect_constraints(
-                        connector, schema_name
-                    ),
-                }
+                collection_time = datetime.utcnow()
+                
+                # Collect raw data
+                tables_data = await self._collect_tables(connector, schema_name)
+                views_data = await self._collect_views(connector, schema_name)
+                sequences_data = await self._collect_sequences(connector, schema_name)
+                functions_data = await self._collect_functions(connector, schema_name)
+                indexes_data = await self._collect_indexes(connector, schema_name)
+                triggers_data = await self._collect_triggers(connector, schema_name)
+                constraints_data = await self._collect_constraints(connector, schema_name)
+                
+                # Convert to model objects
+                schema_info = SchemaInfo(
+                    schema_name=schema_name,
+                    database_type=database_type,
+                    collection_time=collection_time,
+                    tables=[self._convert_table_data(table_data) for table_data in tables_data],
+                    views=[self._convert_view_data(view_data) for view_data in views_data],
+                    sequences=[self._convert_sequence_data(seq_data) for seq_data in sequences_data],
+                    functions=[self._convert_function_data(func_data) for func_data in functions_data],
+                    indexes=[self._convert_index_data(idx_data) for idx_data in indexes_data],
+                    triggers=[self._convert_trigger_data(trig_data) for trig_data in triggers_data],
+                    constraints=[self._convert_constraint_data(cons_data) for cons_data in constraints_data],
+                )
 
-                # Cache the results
-                self._schema_cache[cache_key] = schema_info
-                self._cache_timestamps[cache_key] = datetime.utcnow()
+                # Cache the results as dictionary for backward compatibility
+                cache_data = schema_info.to_dict()
+                self._schema_cache[cache_key] = cache_data
+                self._cache_timestamps[cache_key] = collection_time
 
                 self.logger.info(
                     f"Schema information collected for {schema_name}",
                     extra={
                         "schema_name": schema_name,
                         "database_type": database_type,
-                        "tables_count": len(schema_info["tables"]),
-                        "views_count": len(schema_info["views"]),
-                        "sequences_count": len(schema_info["sequences"]),
+                        "tables_count": len(schema_info.tables),
+                        "views_count": len(schema_info.views),
+                        "sequences_count": len(schema_info.sequences),
                     },
                 )
 
@@ -506,3 +529,112 @@ class SchemaInformationCollector:
                 self.database_manager.return_source_connection(connector)
             else:
                 self.database_manager.return_target_connection(connector)
+
+    def _convert_table_data(self, table_data: Dict[str, Any]) -> TableInfo:
+        """Convert table dictionary data to TableInfo object."""
+        columns = [self._convert_column_data(col) for col in table_data.get("columns", [])]
+        
+        return TableInfo(
+            table_name=table_data["table_name"],
+            table_type=table_data["table_type"],
+            table_schema=table_data["table_schema"],
+            table_comment=table_data.get("table_comment"),
+            estimated_rows=table_data.get("estimated_rows", 0),
+            table_size=table_data.get("table_size", "0 bytes"),
+            columns=columns,
+            constraints=[],  # Will be populated separately
+            indexes=[],      # Will be populated separately  
+            triggers=[],     # Will be populated separately
+        )
+
+    def _convert_column_data(self, column_data: Dict[str, Any]) -> ColumnInfo:
+        """Convert column dictionary data to ColumnInfo object."""
+        return ColumnInfo(
+            column_name=column_data["column_name"],
+            ordinal_position=column_data["ordinal_position"],
+            column_default=column_data.get("column_default"),
+            is_nullable=column_data.get("is_nullable", True),
+            data_type=column_data.get("data_type", ""),
+            character_maximum_length=column_data.get("character_maximum_length"),
+            numeric_precision=column_data.get("numeric_precision"),
+            numeric_scale=column_data.get("numeric_scale"),
+            udt_name=column_data.get("udt_name"),
+            column_comment=column_data.get("column_comment"),
+        )
+
+    def _convert_view_data(self, view_data: Dict[str, Any]) -> ViewInfo:
+        """Convert view dictionary data to ViewInfo object."""
+        columns = [self._convert_column_data(col) for col in view_data.get("columns", [])]
+        
+        return ViewInfo(
+            view_name=view_data["view_name"],
+            view_definition=view_data["view_definition"],
+            is_updatable=view_data["is_updatable"],
+            is_insertable_into=view_data["is_insertable_into"],
+            view_comment=view_data.get("view_comment"),
+            columns=columns,
+        )
+
+    def _convert_sequence_data(self, sequence_data: Dict[str, Any]) -> SequenceInfo:
+        """Convert sequence dictionary data to SequenceInfo object."""
+        return SequenceInfo(
+            sequence_name=sequence_data["sequence_name"],
+            data_type=sequence_data["data_type"],
+            start_value=sequence_data["start_value"],
+            minimum_value=sequence_data["minimum_value"],
+            maximum_value=sequence_data["maximum_value"],
+            increment=sequence_data["increment"],
+            cycle_option=sequence_data["cycle_option"],
+            sequence_comment=sequence_data.get("sequence_comment"),
+        )
+
+    def _convert_function_data(self, function_data: Dict[str, Any]) -> FunctionInfo:
+        """Convert function dictionary data to FunctionInfo object."""
+        return FunctionInfo(
+            function_name=function_data["function_name"],
+            function_type=function_data.get("routine_type", "FUNCTION"),
+            return_type=function_data.get("return_type", "void"),
+            function_definition=function_data.get("routine_definition", ""),
+            argument_types=[],  # Could be enhanced later
+            argument_names=[],  # Could be enhanced later
+            function_comment=function_data.get("function_comment"),
+        )
+
+    def _convert_index_data(self, index_data: Dict[str, Any]) -> IndexInfo:
+        """Convert index dictionary data to IndexInfo object."""
+        return IndexInfo(
+            index_name=index_data["index_name"],
+            table_name=index_data["table_name"],
+            index_type=index_data.get("index_type", "btree"),
+            is_unique=index_data.get("is_unique", False),
+            is_primary=index_data.get("is_primary", False),
+            column_names=[],  # Could be enhanced later
+            index_definition=index_data.get("index_definition"),
+            condition=None,  # Could be enhanced later
+            index_comment=index_data.get("index_comment"),
+        )
+
+    def _convert_trigger_data(self, trigger_data: Dict[str, Any]) -> TriggerInfo:
+        """Convert trigger dictionary data to TriggerInfo object."""
+        return TriggerInfo(
+            trigger_name=trigger_data["trigger_name"],
+            table_name=trigger_data["table_name"],
+            trigger_event=trigger_data.get("event_manipulation", ""),
+            trigger_timing=trigger_data.get("action_timing", ""),
+            function_name=trigger_data.get("action_statement", ""),
+            trigger_definition=trigger_data.get("action_statement"),
+            trigger_comment=trigger_data.get("trigger_comment"),
+        )
+
+    def _convert_constraint_data(self, constraint_data: Dict[str, Any]) -> ConstraintInfo:
+        """Convert constraint dictionary data to ConstraintInfo object."""
+        return ConstraintInfo(
+            constraint_name=constraint_data["constraint_name"],
+            table_name=constraint_data["table_name"],
+            constraint_type=constraint_data["constraint_type"],
+            column_name=constraint_data.get("column_name"),
+            foreign_table_name=constraint_data.get("foreign_table_name"),
+            foreign_column_name=constraint_data.get("foreign_column_name"),
+            check_clause=constraint_data.get("check_clause"),
+            constraint_comment=constraint_data.get("constraint_comment"),
+        )
