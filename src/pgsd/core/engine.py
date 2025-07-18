@@ -181,6 +181,10 @@ class SchemaComparisonEngine:
                 "analysis_time_seconds": analysis_time,
                 "comparison_timestamp": datetime.now().isoformat(),
             }
+            
+            # Debug log metadata
+            logger.info(f"Engine metadata set: source_db={source_database}, target_db={target_database}, "
+                       f"source_schema={source_schema}, target_schema={target_schema}")
 
             return diff_result
 

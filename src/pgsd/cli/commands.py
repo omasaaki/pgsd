@@ -102,6 +102,8 @@ class CompareCommand(BaseCommand):
                     source_schema = self.args.source_schema or self.args.schema or 'public'
                     target_schema = self.args.target_schema or self.args.schema or 'public'
                 
+                self.logger.info(f"Comparing schemas: source={source_schema}, target={target_schema}")
+                
                 return await engine.compare_schemas(
                     source_schema=source_schema,
                     target_schema=target_schema
@@ -153,7 +155,7 @@ class CompareCommand(BaseCommand):
             database=self.args.source_db,
             username=getattr(self.args, 'source_user', '') or '',
             password=getattr(self.args, 'source_password', '') or '',
-            schema=self.args.schema
+            schema=self.args.source_schema or self.args.schema
         )
 
     def _create_target_db_config(self) -> DatabaseConfig:
@@ -164,7 +166,7 @@ class CompareCommand(BaseCommand):
             database=self.args.target_db,
             username=getattr(self.args, 'target_user', '') or '',
             password=getattr(self.args, 'target_password', '') or '',
-            schema=self.args.schema
+            schema=self.args.target_schema or self.args.schema
         )
 
     def _generate_reports(self, diff_result) -> List[Path]:

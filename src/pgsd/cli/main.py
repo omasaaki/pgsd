@@ -153,7 +153,6 @@ Examples:
         compare_group = compare_parser.add_argument_group('Comparison Options')
         compare_group.add_argument(
             '--schema',
-            default='public',
             help='Schema to compare for both databases (default: public)'
         )
         compare_group.add_argument(
@@ -502,7 +501,6 @@ Examples:
         compare_group = compare_parser.add_argument_group('Comparison Options')
         compare_group.add_argument(
             '--schema',
-            default='public',
             help='Schema to compare for both databases (default: public)'
         )
         compare_group.add_argument(
@@ -582,8 +580,10 @@ Examples:
             config_args.setdefault('source_db', {})['username'] = args.source_user
         if hasattr(args, 'source_password') and args.source_password:
             config_args.setdefault('source_db', {})['password'] = args.source_password
-        if hasattr(args, 'schema') and args.schema:
-            config_args.setdefault('source_db', {})['schema'] = args.schema
+        # 個別のスキーマ指定が優先、なければ共通のschema指定を使用
+        source_schema = getattr(args, 'source_schema', None) or getattr(args, 'schema', None)
+        if source_schema:
+            config_args.setdefault('source_db', {})['schema'] = source_schema
             
         if hasattr(args, 'target_host') and args.target_host:
             config_args.setdefault('target_db', {})['host'] = args.target_host
@@ -595,8 +595,10 @@ Examples:
             config_args.setdefault('target_db', {})['username'] = args.target_user
         if hasattr(args, 'target_password') and args.target_password:
             config_args.setdefault('target_db', {})['password'] = args.target_password
-        if hasattr(args, 'schema') and args.schema:
-            config_args.setdefault('target_db', {})['schema'] = args.schema
+        # 個別のスキーマ指定が優先、なければ共通のschema指定を使用
+        target_schema = getattr(args, 'target_schema', None) or getattr(args, 'schema', None)
+        if target_schema:
+            config_args.setdefault('target_db', {})['schema'] = target_schema
             
         # 出力関連の引数
         if hasattr(args, 'output') and args.output:

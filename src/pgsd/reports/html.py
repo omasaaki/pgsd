@@ -11,6 +11,7 @@ from jinja2 import Template
 
 from .base import BaseReporter, ReportFormat, ReportMetadata, ReportConfig
 from .templates import BuiltinTemplates
+from .templates_simple import SIMPLE_HTML_TEMPLATE
 from .grouping import group_changes_by_table, get_table_summary, GroupedDiffResult
 from ..core.analyzer import DiffResult
 from ..exceptions.processing import ProcessingError
@@ -91,9 +92,10 @@ class HTMLReporter(BaseReporter):
         """
         if self._template is None:
             try:
-                template_content = BuiltinTemplates.HTML_TEMPLATE
+                # Use simple template temporarily to avoid Jinja2 syntax error
+                template_content = SIMPLE_HTML_TEMPLATE
                 self._template = Template(template_content)
-                self.logger.debug("HTML template loaded and cached")
+                self.logger.debug("HTML template (simple) loaded and cached")
             except Exception as e:
                 raise ProcessingError(f"Failed to load HTML template: {str(e)}")
         

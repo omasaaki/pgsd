@@ -118,7 +118,7 @@ class ReportConfig:
     include_summary: bool = True
     include_details: bool = True
     timezone: str = "UTC"
-    overwrite_existing: bool = False
+    overwrite_existing: bool = True
     
     # Table grouping options
     group_by_table: bool = True
@@ -238,6 +238,7 @@ class BaseReporter(ABC):
             metadata.analysis_time_seconds = result_meta.get(
                 "analysis_time_seconds", 0.0
             )
+            
 
         return metadata
 
@@ -291,6 +292,10 @@ class BaseReporter(ABC):
         """
         if output_path is None:
             output_path = self.config.get_output_path(self.format, timestamp)
+        elif output_path.is_dir():
+            # If a directory is provided, generate filename within that directory
+            filename = self.config.generate_filename(self.format, timestamp)
+            output_path = output_path / filename
 
         # Check if file exists and overwrite is disabled
         if output_path.exists() and not self.config.overwrite_existing:

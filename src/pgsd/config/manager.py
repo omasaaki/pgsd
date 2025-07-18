@@ -223,10 +223,12 @@ class ConfigurationManager:
             f"  Source DB: {self._config.source_db.host}:"
             f"{self._config.source_db.port}/{self._config.source_db.database}"
         )
+        self.logger.info(f"  Source schema: {self._config.source_db.schema}")
         self.logger.info(
             f"  Target DB: {self._config.target_db.host}:"
             f"{self._config.target_db.port}/{self._config.target_db.database}"
         )
+        self.logger.info(f"  Target schema: {self._config.target_db.schema}")
         self.logger.info(f"  Output Format: {self._config.output.format.value}")
         self.logger.info(f"  Output Path: {self._config.output.path}")
         self.logger.info(f"  Log Level: {self._config.system.log_level.value}")
