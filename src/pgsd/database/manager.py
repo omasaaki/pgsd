@@ -353,7 +353,11 @@ class DatabaseManager:
         """
         # Test source connection
         try:
-            source_conn = await self.get_source_connection()
+            # During initialization, get connection directly from pool
+            # to avoid the initialized check in get_source_connection()
+            if not self.source_pool:
+                raise DatabaseManagerError("Source connection pool not available")
+            source_conn = self.source_pool.get_connection()
 
             # Test connection
             if not await source_conn.test_connection():
@@ -394,7 +398,11 @@ class DatabaseManager:
 
         # Test target connection
         try:
-            target_conn = await self.get_target_connection()
+            # During initialization, get connection directly from pool
+            # to avoid the initialized check in get_target_connection()
+            if not self.target_pool:
+                raise DatabaseManagerError("Target connection pool not available")
+            target_conn = self.target_pool.get_connection()
 
             # Test connection
             if not await target_conn.test_connection():

@@ -22,6 +22,17 @@ class DatabaseError(PGSDError):
     base_retry_delay = 2.0
     max_retry_delay = 30.0
 
+    def __init__(self, message: str, **kwargs):
+        """Initialize database error with flexible arguments."""
+        # Extract connection_id if provided and add to context
+        connection_id = kwargs.pop('connection_id', None)
+        if connection_id:
+            context = kwargs.get('context', {})
+            context['connection_id'] = connection_id
+            kwargs['context'] = context
+        
+        super().__init__(message, **kwargs)
+
 
 class DatabaseConnectionError(DatabaseError):
     """Raised when database connection fails."""
@@ -32,21 +43,26 @@ class DatabaseConnectionError(DatabaseError):
 
     def __init__(
         self,
-        host: str,
-        port: int,
-        database: str,
-        user: Optional[str] = None,
-        original_error: Optional[Exception] = None,
+        *args,
+        **kwargs
     ) -> None:
         """Initialize database connection error.
 
-        Args:
-            host: Database host
-            port: Database port
-            database: Database name
-            user: Database user (optional)
-            original_error: Original exception
+        Supports both message-based and parameter-based initialization:
+        - DatabaseConnectionError(message, **kwargs)
+        - DatabaseConnectionError(host, port, database, user, original_error)
         """
+        if len(args) == 1 and isinstance(args[0], str):
+            # Message-based initialization
+            message = args[0]
+            super().__init__(message, **kwargs)
+            return
+
+        # Parameter-based initialization (legacy)
+        host, port, database = args[0], args[1], args[2]
+        user = args[3] if len(args) > 3 else None
+        original_error = args[4] if len(args) > 4 else None
+
         # Construct error message
         connection_info = f"{host}:{port}"
         if user:

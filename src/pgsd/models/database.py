@@ -41,14 +41,18 @@ class PostgreSQLVersion:
         Returns:
             PostgreSQLVersion instance
         """
-        # Remove "PostgreSQL" prefix if present
+        # Remove "PostgreSQL" prefix if present and extract version number
         clean_version = version_string.replace("PostgreSQL", "").strip()
-
-        # Split version parts
-        parts = clean_version.split(".")
-        major = int(parts[0])
-        minor = int(parts[1]) if len(parts) > 1 else 0
-        patch = int(parts[2]) if len(parts) > 2 else 0
+        
+        # Extract version number before any additional info (e.g., "(Ubuntu ...")
+        import re
+        version_match = re.match(r'(\d+)\.(\d+)(?:\.(\d+))?', clean_version)
+        if not version_match:
+            raise ValueError(f"Unable to parse PostgreSQL version from: {version_string}")
+        
+        major = int(version_match.group(1))
+        minor = int(version_match.group(2)) if version_match.group(2) else 0
+        patch = int(version_match.group(3)) if version_match.group(3) else 0
 
         # Calculate server_version_num (PostgreSQL format)
         server_version_num = major * 10000 + minor * 100 + patch
