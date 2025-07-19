@@ -172,7 +172,7 @@ class SchemaComparisonEngine:
                 f"Total changes detected: {diff_result.summary['total_changes']}"
             )
 
-            # Add metadata to result
+            # Add metadata to result including connection information
             diff_result.metadata = {
                 "source_database": source_database,
                 "target_database": target_database,
@@ -180,6 +180,13 @@ class SchemaComparisonEngine:
                 "target_schema": target_schema,
                 "analysis_time_seconds": analysis_time,
                 "comparison_timestamp": datetime.now().isoformat(),
+                # Connection information for tooltips
+                "source_host": self.config.source_db.host if self.config else "localhost",
+                "source_port": self.config.source_db.port if self.config else 5432,
+                "source_username": self.config.source_db.username if self.config else "",
+                "target_host": self.config.target_db.host if self.config else "localhost", 
+                "target_port": self.config.target_db.port if self.config else 5432,
+                "target_username": self.config.target_db.username if self.config else "",
             }
             
             # Debug log metadata

@@ -117,13 +117,19 @@ class MarkdownReporter(BaseReporter):
         
         # Prepare metadata for template
         template_metadata = {
-            "generated_at": metadata.generated_at.strftime("%Y-%m-%d %H:%M:%S UTC"),
+            "generated_at": metadata.generated_at.astimezone().strftime("%Y-%m-%d %H:%M:%S %Z"),
             "source_database": metadata.source_database,
             "target_database": metadata.target_database,
             "source_schema": metadata.source_schema,
             "target_schema": metadata.target_schema,
             "analysis_time_seconds": metadata.analysis_time_seconds,
             "generator_version": metadata.generator_version,
+            "source_host": metadata.source_host,
+            "source_port": metadata.source_port,
+            "source_username": metadata.source_username,
+            "target_host": metadata.target_host,
+            "target_port": metadata.target_port,
+            "target_username": metadata.target_username,
         }
         
         # Prepare grouped data if table grouping is enabled

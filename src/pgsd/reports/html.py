@@ -92,10 +92,11 @@ class HTMLReporter(BaseReporter):
         """
         if self._template is None:
             try:
-                # Use simple template temporarily to avoid Jinja2 syntax error
+                # Temporarily use simple template due to Jinja2 syntax issues in full template
+                # TODO: Fix BuiltinTemplates.HTML_TEMPLATE syntax errors
                 template_content = SIMPLE_HTML_TEMPLATE
                 self._template = Template(template_content)
-                self.logger.debug("HTML template (simple) loaded and cached")
+                self.logger.debug("HTML template (full) loaded and cached")
             except Exception as e:
                 raise ProcessingError(f"Failed to load HTML template: {str(e)}")
         
@@ -118,13 +119,19 @@ class HTMLReporter(BaseReporter):
         
         # Prepare metadata for template
         template_metadata = {
-            "generated_at": metadata.generated_at.strftime("%Y-%m-%d %H:%M:%S UTC"),
+            "generated_at": metadata.generated_at.astimezone().strftime("%Y-%m-%d %H:%M:%S %Z"),
             "source_database": metadata.source_database,
             "target_database": metadata.target_database,
             "source_schema": metadata.source_schema,
             "target_schema": metadata.target_schema,
             "analysis_time_seconds": metadata.analysis_time_seconds,
             "generator_version": metadata.generator_version,
+            "source_host": metadata.source_host,
+            "source_port": metadata.source_port,
+            "source_username": metadata.source_username,
+            "target_host": metadata.target_host,
+            "target_port": metadata.target_port,
+            "target_username": metadata.target_username,
         }
         
         # Prepare grouped data if table grouping is enabled
@@ -179,9 +186,11 @@ class HTMLReporter(BaseReporter):
         indexes_removed = len(diff_result.indexes.get("removed", []))
         indexes_modified = len(diff_result.indexes.get("modified", []))
         
-        # Calculate totals
+        # Calculate totals (detailed level aggregation)
+        # Note: tables_modified is excluded to avoid double counting
+        # as column/constraint/index changes are already included individually
         total_changes = (
-            tables_added + tables_removed + tables_modified +
+            tables_added + tables_removed +
             columns_added + columns_removed + columns_modified +
             constraints_added + constraints_removed + constraints_modified +
             indexes_added + indexes_removed + indexes_modified

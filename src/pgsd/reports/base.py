@@ -91,6 +91,14 @@ class ReportMetadata:
     analysis_time_seconds: float = 0.0
     generator_version: str = "1.0.0"
     report_format: ReportFormat = ReportFormat.HTML
+    
+    # Connection information for tooltips
+    source_host: str = ""
+    source_port: int = 5432
+    source_username: str = ""
+    target_host: str = ""
+    target_port: int = 5432
+    target_username: str = ""
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert metadata to dictionary."""
@@ -104,6 +112,12 @@ class ReportMetadata:
             "analysis_time_seconds": self.analysis_time_seconds,
             "generator_version": self.generator_version,
             "report_format": self.report_format.value,
+            "source_host": self.source_host,
+            "source_port": self.source_port,
+            "source_username": self.source_username,
+            "target_host": self.target_host,
+            "target_port": self.target_port,
+            "target_username": self.target_username,
         }
 
 
@@ -238,6 +252,14 @@ class BaseReporter(ABC):
             metadata.analysis_time_seconds = result_meta.get(
                 "analysis_time_seconds", 0.0
             )
+            
+            # Set connection information for tooltips
+            metadata.source_host = result_meta.get("source_host", "localhost")
+            metadata.source_port = result_meta.get("source_port", 5432)
+            metadata.source_username = result_meta.get("source_username", "")
+            metadata.target_host = result_meta.get("target_host", "localhost")
+            metadata.target_port = result_meta.get("target_port", 5432)
+            metadata.target_username = result_meta.get("target_username", "")
             
 
         return metadata

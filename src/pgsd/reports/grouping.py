@@ -196,9 +196,18 @@ def _process_column_changes(
 ) -> None:
     """Process column-level changes and group by table."""
     
+    # Get list of added and removed table names to skip their columns
+    added_table_names = {extract_table_name(t) for t in diff_result.tables.get("added", [])}
+    removed_table_names = {extract_table_name(t) for t in diff_result.tables.get("removed", [])}
+    
     for change_type in ["added", "removed", "modified"]:
         for column in diff_result.columns.get(change_type, []):
             table_name = extract_table_name(column)
+            
+            # Skip columns from tables that were added/removed entirely
+            if table_name in added_table_names or table_name in removed_table_names:
+                logger.debug(f"Skipping column {change_type} for {table_name} (table-level change)")
+                continue
             
             # Ensure table entry exists
             if table_name not in table_changes_map:
@@ -219,9 +228,18 @@ def _process_constraint_changes(
 ) -> None:
     """Process constraint-level changes and group by table."""
     
+    # Get list of added and removed table names to skip their constraints
+    added_table_names = {extract_table_name(t) for t in diff_result.tables.get("added", [])}
+    removed_table_names = {extract_table_name(t) for t in diff_result.tables.get("removed", [])}
+    
     for change_type in ["added", "removed", "modified"]:
         for constraint in diff_result.constraints.get(change_type, []):
             table_name = extract_table_name(constraint)
+            
+            # Skip constraints from tables that were added/removed entirely
+            if table_name in added_table_names or table_name in removed_table_names:
+                logger.debug(f"Skipping constraint {change_type} for {table_name} (table-level change)")
+                continue
             
             # Ensure table entry exists
             if table_name not in table_changes_map:
@@ -242,9 +260,18 @@ def _process_index_changes(
 ) -> None:
     """Process index-level changes and group by table."""
     
+    # Get list of added and removed table names to skip their indexes
+    added_table_names = {extract_table_name(t) for t in diff_result.tables.get("added", [])}
+    removed_table_names = {extract_table_name(t) for t in diff_result.tables.get("removed", [])}
+    
     for change_type in ["added", "removed", "modified"]:
         for index in diff_result.indexes.get(change_type, []):
             table_name = extract_table_name(index)
+            
+            # Skip indexes from tables that were added/removed entirely
+            if table_name in added_table_names or table_name in removed_table_names:
+                logger.debug(f"Skipping index {change_type} for {table_name} (table-level change)")
+                continue
             
             # Ensure table entry exists
             if table_name not in table_changes_map:

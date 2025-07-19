@@ -900,6 +900,7 @@ class BuiltinTemplates:
                             {% endif %}
                         {% endfor %}
                     </div>
+                {% endif %}
                 {% else %}
                     <!-- Legacy format fallback -->
                     <div class="section">
@@ -913,8 +914,7 @@ class BuiltinTemplates:
                             {{ content }}
                         </div>
                     </div>
-                {% endif %}
-            {% else %}
+                {% else %}
                 <div class="no-changes">
                     <div class="no-changes-icon">✅</div>
                     <h2>No Changes Detected</h2>
