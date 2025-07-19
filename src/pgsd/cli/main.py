@@ -15,6 +15,9 @@ from .commands import CompareCommand, ListSchemasCommand, ValidateCommand, Versi
 from .progress import ProgressReporter
 from ..exceptions.base import PGSDError
 from ..exceptions.config import ConfigurationError
+from ..utils.logger import setup_logging
+from ..utils.log_config import LogConfig
+from pathlib import Path
 
 
 logger = logging.getLogger(__name__)
@@ -289,6 +292,9 @@ Examples:
                 config_manager = ConfigurationManager(getattr(parsed_args, 'config', None))
                 cli_args = self._filter_config_args(parsed_args)
                 config = config_manager.load_configuration(cli_args)
+                
+                # Reconfigure logging with settings from config file
+                self._configure_logging_from_config(config, parsed_args)
             
             # Execute command
             return self._execute_command(parsed_args, config)
@@ -544,6 +550,35 @@ Examples:
             level=log_level,
             format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
         )
+
+    def _configure_logging_from_config(self, config: PGSDConfiguration, args: Namespace) -> None:
+        """Configure logging based on configuration file settings.
+        
+        Args:
+            config: Loaded configuration
+            args: Parsed command line arguments
+        """
+        if not config:
+            return
+            
+        # Determine log level (CLI args override config)
+        if hasattr(args, 'verbose') and args.verbose:
+            log_level = "DEBUG"
+        elif hasattr(args, 'quiet') and args.quiet:
+            log_level = "ERROR"
+        else:
+            log_level = config.system.log_level.value
+            
+        # Create LogConfig from system settings
+        log_config = LogConfig(
+            level=log_level,
+            format="console",  # Use console format for better readability
+            console_output=True,
+            file_path=Path(config.system.log_file) if config.system.log_file else None,
+        )
+        
+        # Setup logging with the new configuration
+        setup_logging(log_config)
 
     def _args_to_dict(self, args: Namespace) -> Dict[str, Any]:
         """Convert parsed arguments to dictionary.

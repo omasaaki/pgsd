@@ -175,10 +175,23 @@ def setup_logging(config: Optional[LogConfig] = None) -> None:
     # Clear existing handlers
     root_logger.handlers.clear()
 
+    # Define formatters
+    if config.format == "json":
+        # JSON format already handled by structlog processors
+        formatter = None
+    else:
+        # Console format with date/time and log level
+        formatter = logging.Formatter(
+            '%(asctime)s - %(levelname)s - %(message)s',
+            datefmt='%Y-%m-%d %H:%M:%S'
+        )
+
     # Console handler
     if config.console_output:
         console_handler = logging.StreamHandler(sys.stdout)
         console_handler.setLevel(getattr(logging, config.level.upper()))
+        if formatter:
+            console_handler.setFormatter(formatter)
         root_logger.addHandler(console_handler)
 
     # File handler with rotation
@@ -191,6 +204,8 @@ def setup_logging(config: Optional[LogConfig] = None) -> None:
             encoding="utf-8",
         )
         file_handler.setLevel(getattr(logging, config.level.upper()))
+        if formatter:
+            file_handler.setFormatter(formatter)
         root_logger.addHandler(file_handler)
 
     _is_configured = True
