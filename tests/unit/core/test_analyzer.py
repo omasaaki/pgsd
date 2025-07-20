@@ -2,6 +2,7 @@
 
 import pytest
 from unittest.mock import Mock
+from datetime import datetime, timezone
 
 from src.pgsd.core.analyzer import DiffAnalyzer, DiffResult, TableDiff
 from src.pgsd.models.schema import (
@@ -318,8 +319,8 @@ class TestDiffAnalyzer:
     def test_compare_tables_removed(self, analyzer):
         """Test detection of removed tables."""
         table_a1 = TableInfo(
-            name="users",
-            schema="public",
+            table_name="users",
+            table_schema="public",
             table_type="BASE TABLE",
             columns=[],
             constraints=[],
@@ -331,8 +332,8 @@ class TestDiffAnalyzer:
         )
 
         table_a2 = TableInfo(
-            name="old_table",
-            schema="public",
+            table_name="old_table",
+            table_schema="public",
             table_type="BASE TABLE",
             columns=[],
             constraints=[],
@@ -344,8 +345,8 @@ class TestDiffAnalyzer:
         )
 
         table_b = TableInfo(
-            name="users",
-            schema="public",
+            table_name="users",
+            table_schema="public",
             table_type="BASE TABLE",
             columns=[],
             constraints=[],
@@ -358,28 +359,22 @@ class TestDiffAnalyzer:
 
         schema_a = SchemaInfo(
             schema_name="public",
-            database_name="db_a",
             database_type="source",
-            postgresql_version="14.5",
-            collection_time="2025-07-14T10:00:00",
+            collection_time=datetime.now(timezone.utc),
             tables=[table_a1, table_a2],
             views=[],
             functions=[],
             sequences=[],
-            statistics={},
         )
 
         schema_b = SchemaInfo(
             schema_name="public",
-            database_name="db_b",
             database_type="target",
-            postgresql_version="14.5",
-            collection_time="2025-07-14T10:00:00",
+            collection_time=datetime.now(timezone.utc),
             tables=[table_b],
             views=[],
             functions=[],
             sequences=[],
-            statistics={},
         )
 
         result = analyzer.analyze(schema_a, schema_b)
@@ -391,28 +386,22 @@ class TestDiffAnalyzer:
         """Test comparison of empty schemas."""
         schema_a = SchemaInfo(
             schema_name="public",
-            database_name="db_a",
             database_type="source",
-            postgresql_version="14.5",
-            collection_time="2025-07-14T10:00:00",
+            collection_time=datetime.now(timezone.utc),
             tables=[],
             views=[],
             functions=[],
             sequences=[],
-            statistics={},
         )
 
         schema_b = SchemaInfo(
             schema_name="public",
-            database_name="db_b",
             database_type="target",
-            postgresql_version="14.5",
-            collection_time="2025-07-14T10:00:00",
+            collection_time=datetime.now(timezone.utc),
             tables=[],
             views=[],
             functions=[],
             sequences=[],
-            statistics={},
         )
 
         result = analyzer.analyze(schema_a, schema_b)
@@ -435,26 +424,22 @@ class TestDiffAnalyzer:
         """Test constraint comparison."""
         # Create constraint objects
         constraint_a = ConstraintInfo(
-            name="users_pkey",
+            constraint_name="users_pkey",
             constraint_type="PRIMARY KEY",
             table_name="users",
-            columns=["id"],
-            is_deferrable=False,
-            initially_deferred=False,
+            column_name="id",
         )
 
         constraint_b = ConstraintInfo(
-            name="users_email_unique",
+            constraint_name="users_email_unique",
             constraint_type="UNIQUE",
             table_name="users",
-            columns=["email"],
-            is_deferrable=False,
-            initially_deferred=False,
+            column_name="email",
         )
 
         table_a = TableInfo(
-            name="users",
-            schema="public",
+            table_name="users",
+            table_schema="public",
             table_type="BASE TABLE",
             columns=[],
             constraints=[constraint_a],
@@ -462,12 +447,12 @@ class TestDiffAnalyzer:
             triggers=[],
             table_comment=None,
             estimated_rows=0,
-            table_size="0",
+            table_size="0 bytes",
         )
 
         table_b = TableInfo(
-            name="users",
-            schema="public",
+            table_name="users",
+            table_schema="public",
             table_type="BASE TABLE",
             columns=[],
             constraints=[constraint_a, constraint_b],
@@ -475,57 +460,51 @@ class TestDiffAnalyzer:
             triggers=[],
             table_comment=None,
             estimated_rows=0,
-            table_size="0",
+            table_size="0 bytes",
         )
 
         table_diff = analyzer._compare_table_details(table_a, table_b)
 
         assert "added" in table_diff.constraints
         assert len(table_diff.constraints["added"]) == 1
-        assert table_diff.constraints["added"][0].name == "users_email_unique"
+        assert table_diff.constraints["added"][0].constraint_name == "users_email_unique"
 
     def test_compare_views(self, analyzer):
         """Test view comparison."""
         view_a = ViewInfo(
-            name="user_summary",
-            schema="public",
-            definition="SELECT id, name FROM users",
-            is_materialized=False,
+            view_name="user_summary",
+            view_definition="SELECT id, name FROM users",
+            is_updatable=True,
+            is_insertable_into=False,
             columns=[],
         )
 
         view_b = ViewInfo(
-            name="user_summary",
-            schema="public",
-            definition="SELECT id, name, email FROM users",  # Modified
-            is_materialized=False,
+            view_name="user_summary",
+            view_definition="SELECT id, name, email FROM users",  # Modified
+            is_updatable=True,
+            is_insertable_into=False,
             columns=[],
         )
 
         schema_a = SchemaInfo(
             schema_name="public",
-            database_name="db_a",
             database_type="source",
-            postgresql_version="14.5",
-            collection_time="2025-07-14T10:00:00",
+            collection_time=datetime.now(timezone.utc),
             tables=[],
             views=[view_a],
             functions=[],
             sequences=[],
-            statistics={},
         )
 
         schema_b = SchemaInfo(
             schema_name="public",
-            database_name="db_b",
             database_type="target",
-            postgresql_version="14.5",
-            collection_time="2025-07-14T10:00:00",
+            collection_time=datetime.now(timezone.utc),
             tables=[],
             views=[view_b],
             functions=[],
             sequences=[],
-            statistics={},
         )
 
         result = analyzer.analyze(schema_a, schema_b)
@@ -536,51 +515,37 @@ class TestDiffAnalyzer:
     def test_compare_functions(self, analyzer):
         """Test function comparison."""
         func_a = FunctionInfo(
-            name="get_user_count",
-            schema="public",
-            signature="get_user_count()",
+            function_name="get_user_count",
+            function_type="FUNCTION",
             return_type="integer",
-            language="sql",
-            definition="SELECT COUNT(*) FROM users",
-            volatility="STABLE",
-            arguments=[],
+            function_definition="SELECT COUNT(*) FROM users",
         )
 
         func_b = FunctionInfo(
-            name="get_user_count",
-            schema="public",
-            signature="get_user_count()",
+            function_name="get_user_count",
+            function_type="FUNCTION",
             return_type="bigint",  # Changed
-            language="sql",
-            definition="SELECT COUNT(*) FROM users",
-            volatility="STABLE",
-            arguments=[],
+            function_definition="SELECT COUNT(*) FROM users",
         )
 
         schema_a = SchemaInfo(
             schema_name="public",
-            database_name="db_a",
             database_type="source",
-            postgresql_version="14.5",
-            collection_time="2025-07-14T10:00:00",
+            collection_time=datetime.now(timezone.utc),
             tables=[],
             views=[],
             functions=[func_a],
             sequences=[],
-            statistics={},
         )
 
         schema_b = SchemaInfo(
             schema_name="public",
-            database_name="db_b",
             database_type="target",
-            postgresql_version="14.5",
-            collection_time="2025-07-14T10:00:00",
+            collection_time=datetime.now(timezone.utc),
             tables=[],
             views=[],
             functions=[func_b],
             sequences=[],
-            statistics={},
         )
 
         result = analyzer.analyze(schema_a, schema_b)
@@ -591,55 +556,43 @@ class TestDiffAnalyzer:
     def test_compare_sequences(self, analyzer):
         """Test sequence comparison."""
         seq_a = SequenceInfo(
-            name="users_id_seq",
-            schema="public",
+            sequence_name="users_id_seq",
             data_type="bigint",
-            start_value=1,
-            increment=1,
-            min_value=1,
-            max_value=9223372036854775807,
-            is_cycled=False,
-            owner_table="users",
-            owner_column="id",
+            start_value="1",
+            minimum_value="1",
+            maximum_value="9223372036854775807",
+            increment="1",
+            cycle_option=False,
         )
 
         seq_b = SequenceInfo(
-            name="users_id_seq",
-            schema="public",
+            sequence_name="users_id_seq",
             data_type="bigint",
-            start_value=100,  # Changed
-            increment=1,
-            min_value=1,
-            max_value=9223372036854775807,
-            is_cycled=False,
-            owner_table="users",
-            owner_column="id",
+            start_value="100",  # Changed
+            minimum_value="1",
+            maximum_value="9223372036854775807",
+            increment="1",
+            cycle_option=False,
         )
 
         schema_a = SchemaInfo(
             schema_name="public",
-            database_name="db_a",
             database_type="source",
-            postgresql_version="14.5",
-            collection_time="2025-07-14T10:00:00",
+            collection_time=datetime.now(timezone.utc),
             tables=[],
             views=[],
             functions=[],
             sequences=[seq_a],
-            statistics={},
         )
 
         schema_b = SchemaInfo(
             schema_name="public",
-            database_name="db_b",
             database_type="target",
-            postgresql_version="14.5",
-            collection_time="2025-07-14T10:00:00",
+            collection_time=datetime.now(timezone.utc),
             tables=[],
             views=[],
             functions=[],
             sequences=[seq_b],
-            statistics={},
         )
 
         result = analyzer.analyze(schema_a, schema_b)
@@ -659,8 +612,8 @@ class TestDiffAnalyzerEdgeCases:
     def test_case_sensitivity(self, analyzer):
         """Test case sensitivity in names."""
         table_a = TableInfo(
-            name="Users",
-            schema="public",
+            table_name="Users",
+            table_schema="public",
             table_type="BASE TABLE",
             columns=[],
             constraints=[],
@@ -668,12 +621,12 @@ class TestDiffAnalyzerEdgeCases:
             triggers=[],
             table_comment=None,
             estimated_rows=0,
-            table_size="0",
+            table_size="0 bytes",
         )
 
         table_b = TableInfo(
-            name="users",
-            schema="public",
+            table_name="users",
+            table_schema="public",
             table_type="BASE TABLE",
             columns=[],
             constraints=[],
@@ -681,33 +634,27 @@ class TestDiffAnalyzerEdgeCases:
             triggers=[],
             table_comment=None,
             estimated_rows=0,
-            table_size="0",
+            table_size="0 bytes",
         )
 
         schema_a = SchemaInfo(
             schema_name="public",
-            database_name="db_a",
             database_type="source",
-            postgresql_version="14.5",
-            collection_time="2025-07-14T10:00:00",
+            collection_time=datetime.now(timezone.utc),
             tables=[table_a],
             views=[],
             functions=[],
             sequences=[],
-            statistics={},
         )
 
         schema_b = SchemaInfo(
             schema_name="public",
-            database_name="db_b",
             database_type="target",
-            postgresql_version="14.5",
-            collection_time="2025-07-14T10:00:00",
+            collection_time=datetime.now(timezone.utc),
             tables=[table_b],
             views=[],
             functions=[],
             sequences=[],
-            statistics={},
         )
 
         result = analyzer.analyze(schema_a, schema_b)
@@ -719,7 +666,7 @@ class TestDiffAnalyzerEdgeCases:
     def test_null_values_handling(self, analyzer):
         """Test handling of NULL values in comparisons."""
         col_a = ColumnInfo(
-            name="description",
+            column_name="description",
             data_type="text",
             is_nullable=True,
             column_default=None,
@@ -727,12 +674,10 @@ class TestDiffAnalyzerEdgeCases:
             numeric_precision=None,
             numeric_scale=None,
             ordinal_position=1,
-            udt_name="text",
-            column_comment=None,
         )
 
         col_b = ColumnInfo(
-            name="description",
+            column_name="description",
             data_type="text",
             is_nullable=True,
             column_default="'default value'",  # Changed from None
@@ -740,8 +685,6 @@ class TestDiffAnalyzerEdgeCases:
             numeric_precision=None,
             numeric_scale=None,
             ordinal_position=1,
-            udt_name="text",
-            column_comment="Added comment",  # Changed from None
         )
 
         changes = analyzer._compare_column_details(col_a, col_b)
@@ -760,7 +703,7 @@ class TestDiffAnalyzerEdgeCases:
             for j in range(10):
                 columns.append(
                     ColumnInfo(
-                        name=f"col_{j}",
+                        column_name=f"col_{j}",
                         data_type="integer",
                         is_nullable=False,
                         column_default=None,
@@ -768,15 +711,13 @@ class TestDiffAnalyzerEdgeCases:
                         numeric_precision=32,
                         numeric_scale=0,
                         ordinal_position=j + 1,
-                        udt_name="int4",
-                        column_comment=None,
                     )
                 )
 
             tables_a.append(
                 TableInfo(
-                    name=f"table_{i}",
-                    schema="public",
+                    table_name=f"table_{i}",
+                    table_schema="public",
                     table_type="BASE TABLE",
                     columns=columns,
                     constraints=[],
@@ -791,28 +732,22 @@ class TestDiffAnalyzerEdgeCases:
         # Create schema B identical to A (should result in no changes)
         schema_a = SchemaInfo(
             schema_name="public",
-            database_name="db_a",
             database_type="source",
-            postgresql_version="14.5",
-            collection_time="2025-07-14T10:00:00",
+            collection_time=datetime.now(timezone.utc),
             tables=tables_a,
             views=[],
             functions=[],
             sequences=[],
-            statistics={},
         )
 
         schema_b = SchemaInfo(
             schema_name="public",
-            database_name="db_b",
             database_type="target",
-            postgresql_version="14.5",
-            collection_time="2025-07-14T10:00:00",
+            collection_time=datetime.now(timezone.utc),
             tables=tables_a,
             views=[],
             functions=[],
             sequences=[],
-            statistics={},
         )
 
         result = analyzer.analyze(schema_a, schema_b)

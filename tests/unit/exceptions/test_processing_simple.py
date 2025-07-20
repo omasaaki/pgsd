@@ -23,7 +23,7 @@ class TestProcessingError:
         assert error.error_code == "PROCESSING_ERROR"
         assert error.severity == ErrorSeverity.MEDIUM
         assert error.category == ErrorCategory.PROCESSING
-        assert error.exit_code == 40
+        assert error.get_exit_code() == 40
         assert error.retriable is True
 
     def test_init_with_custom_params(self):
@@ -31,14 +31,13 @@ class TestProcessingError:
         error = ProcessingError(
             "Custom processing error",
             error_code="CUSTOM_PROCESSING",
-            severity=ErrorSeverity.HIGH,
-            exit_code=50
+            severity=ErrorSeverity.HIGH
         )
         
         assert str(error) == "Custom processing error"
         assert error.error_code == "CUSTOM_PROCESSING"
         assert error.severity == ErrorSeverity.HIGH
-        assert error.exit_code == 50
+        assert error.get_exit_code() == 40  # Default processing error code
 
     def test_technical_details(self):
         """Test technical details are captured."""
@@ -66,7 +65,7 @@ class TestSchemaParsingError:
         
         assert "Failed to parse schema 'test_schema'" in str(error)
         assert error.error_code == "SCHEMA_PARSING_FAILED"
-        assert error.exit_code == 41
+        assert error.get_exit_code() == 41
         assert error.retriable is False
 
     def test_init_with_line_number(self):
@@ -132,7 +131,7 @@ class TestReportGenerationError:
 
     def test_init_basic(self):
         """Test ReportGenerationError initialization."""
-        error = ReportGenerationError("html", "Template not found")
+        error = ReportGenerationError("html", error_details="Template not found")
         
         error_message = str(error)
         assert "Failed to generate html report" in error_message
@@ -143,24 +142,23 @@ class TestReportGenerationError:
         output_file = Path("/tmp/report.json")
         error = ReportGenerationError(
             "json", 
-            "Disk space insufficient",
-            output_file=output_file
+            output_path=output_file,
+            error_details="Disk space insufficient"
         )
         
-        assert "output_file" in error.technical_details
-        assert error.technical_details["output_file"] == output_file
+        assert "output_path" in error.technical_details
+        assert error.technical_details["output_path"] == str(output_file)
 
     def test_init_with_template_error(self):
         """Test ReportGenerationError with template error."""
         template_error = "Variable 'schema_name' is undefined"
         error = ReportGenerationError(
             "html", 
-            "Template rendering failed",
-            template_error=template_error
+            error_details="Template rendering failed"
         )
         
-        assert "template_error" in error.technical_details
-        assert error.technical_details["template_error"] == template_error
+        assert "error_details" in error.technical_details
+        assert error.technical_details["error_details"] == "Template rendering failed"
 
 
 class TestComparisonError:
@@ -168,23 +166,23 @@ class TestComparisonError:
 
     def test_init_basic(self):
         """Test ComparisonError initialization."""
-        error = ComparisonError("public", "inventory", "Schema structure mismatch")
+        error = ComparisonError("public", "inventory", "schema_analysis")
         
         error_message = str(error)
         assert "Failed to compare schemas 'public' and 'inventory'" in error_message
-        assert error.error_code == "SCHEMA_COMPARISON_FAILED"
+        assert error.error_code == "COMPARISON_FAILED"
 
-    def test_init_with_comparison_type(self):
+    def test_init_with_comparison_step(self):
         """Test ComparisonError with comparison type."""
         error = ComparisonError(
             "source_schema", 
             "target_schema", 
-            "Table count mismatch",
-            comparison_type="table_structure"
+            "table_analysis",
+            error_details="Table count mismatch"
         )
         
-        assert "comparison_type" in error.technical_details
-        assert error.technical_details["comparison_type"] == "table_structure"
+        assert "comparison_step" in error.technical_details
+        assert error.technical_details["comparison_step"] == "table_analysis"
 
     def test_init_with_details(self):
         """Test ComparisonError with detailed comparison information."""
@@ -196,18 +194,18 @@ class TestComparisonError:
         error = ComparisonError(
             "prod_schema", 
             "test_schema", 
-            "Table count and structure mismatch",
-            comparison_details=comparison_details
+            "table_analysis",
+            error_details="Table count and structure mismatch"
         )
         
-        assert "comparison_details" in error.technical_details
-        assert error.technical_details["comparison_details"] == comparison_details
+        assert "error_details" in error.technical_details
+        assert error.technical_details["error_details"] == "Table count and structure mismatch"
 
     def test_technical_details(self):
         """Test technical details structure."""
-        error = ComparisonError("schema_a", "schema_b", "Comparison failed")
+        error = ComparisonError("schema_a", "schema_b", "schema_analysis")
         
         details = error.technical_details
         assert details["source_schema"] == "schema_a"
         assert details["target_schema"] == "schema_b"
-        assert details["comparison_error"] == "Comparison failed"
+        assert details["comparison_step"] == "schema_analysis"

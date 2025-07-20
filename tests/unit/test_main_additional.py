@@ -531,11 +531,16 @@ class TestEdgeCases:
 
     def test_multiple_signal_handlers_registration(self):
         """Test multiple calls to setup_signal_handlers."""
-        with patch('threading.current_thread'), \
-             patch('threading.main_thread'), \
+        with patch('threading.current_thread') as mock_current, \
+             patch('threading.main_thread') as mock_main, \
              patch('signal.signal') as mock_signal:
             
-            # Mock main thread
+            # Make current_thread return the same object as main_thread
+            main_thread_obj = Mock()
+            mock_current.return_value = main_thread_obj
+            mock_main.return_value = main_thread_obj
+            
+            # Reset mock 
             mock_signal.reset_mock()
             
             # Call multiple times

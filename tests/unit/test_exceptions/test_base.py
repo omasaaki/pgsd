@@ -4,7 +4,7 @@ Unit tests for base exception classes.
 
 import json
 import pytest
-from datetime import datetime
+from datetime import datetime, timezone
 from unittest.mock import Mock
 
 from pgsd.exceptions.base import PGSDError, PGSDWarning, ErrorSeverity, ErrorCategory
@@ -216,9 +216,9 @@ class TestPGSDError:
 
     def test_timestamp_accuracy(self):
         """Test that timestamp is set accurately."""
-        before = datetime.utcnow()
+        before = datetime.now(timezone.utc)
         error = PGSDError("Test error")
-        after = datetime.utcnow()
+        after = datetime.now(timezone.utc)
 
         assert before <= error.timestamp <= after
 

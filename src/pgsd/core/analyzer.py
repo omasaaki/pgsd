@@ -270,8 +270,8 @@ class DiffAnalyzer:
 
     def _compare_tables(self, schema_a: SchemaInfo, schema_b: SchemaInfo):
         """Compare tables between schemas."""
-        tables_a = {t.name: t for t in schema_a.tables}
-        tables_b = {t.name: t for t in schema_b.tables}
+        tables_a = {t.table_name: t for t in schema_a.tables}
+        tables_b = {t.table_name: t for t in schema_b.tables}
 
         table_names_a = set(tables_a.keys())
         table_names_b = set(tables_b.keys())
@@ -314,7 +314,7 @@ class DiffAnalyzer:
         self, table_a: TableInfo, table_b: TableInfo
     ) -> TableDiff:
         """Compare details of two tables."""
-        table_diff = TableDiff(name=table_a.name)
+        table_diff = TableDiff(name=table_a.table_name)
 
         # Compare columns
         self._compare_columns(table_a, table_b, table_diff)
@@ -334,8 +334,8 @@ class DiffAnalyzer:
         self, table_a: TableInfo, table_b: TableInfo, table_diff: TableDiff
     ):
         """Compare columns between two tables."""
-        columns_a = {c.name: c for c in table_a.columns}
-        columns_b = {c.name: c for c in table_b.columns}
+        columns_a = {c.column_name: c for c in table_a.columns}
+        columns_b = {c.column_name: c for c in table_b.columns}
 
         col_names_a = set(columns_a.keys())
         col_names_b = set(columns_b.keys())
@@ -346,7 +346,7 @@ class DiffAnalyzer:
             column = columns_b[col_name]
             table_diff.columns.setdefault("added", []).append(column)
             self.result.columns["added"].append(
-                {"table": table_a.name, "column": column}
+                {"table": table_a.table_name, "column": column}
             )
 
         # Removed columns
@@ -355,7 +355,7 @@ class DiffAnalyzer:
             column = columns_a[col_name]
             table_diff.columns.setdefault("removed", []).append(column)
             self.result.columns["removed"].append(
-                {"table": table_a.name, "column": column}
+                {"table": table_a.table_name, "column": column}
             )
 
         # Modified columns
@@ -370,7 +370,7 @@ class DiffAnalyzer:
                 )
                 self.result.columns["modified"].append(
                     {
-                        "table": table_a.name,
+                        "table": table_a.table_name,
                         "column": columns_b[col_name],
                         "changes": col_changes,
                     }
@@ -438,8 +438,8 @@ class DiffAnalyzer:
         self, table_a: TableInfo, table_b: TableInfo, table_diff: TableDiff
     ):
         """Compare constraints between two tables."""
-        constraints_a = {c.name: c for c in table_a.constraints}
-        constraints_b = {c.name: c for c in table_b.constraints}
+        constraints_a = {c.constraint_name: c for c in table_a.constraints}
+        constraints_b = {c.constraint_name: c for c in table_b.constraints}
 
         const_names_a = set(constraints_a.keys())
         const_names_b = set(constraints_b.keys())
@@ -450,7 +450,7 @@ class DiffAnalyzer:
             constraint = constraints_b[const_name]
             table_diff.constraints.setdefault("added", []).append(constraint)
             self.result.constraints["added"].append(
-                {"table": table_a.name, "constraint": constraint}
+                {"table": table_a.table_name, "constraint": constraint}
             )
 
         # Removed constraints
@@ -459,7 +459,7 @@ class DiffAnalyzer:
             constraint = constraints_a[const_name]
             table_diff.constraints.setdefault("removed", []).append(constraint)
             self.result.constraints["removed"].append(
-                {"table": table_a.name, "constraint": constraint}
+                {"table": table_a.table_name, "constraint": constraint}
             )
 
         # Modified constraints
@@ -474,7 +474,7 @@ class DiffAnalyzer:
                 )
                 self.result.constraints["modified"].append(
                     {
-                        "table": table_a.name,
+                        "table": table_a.table_name,
                         "constraint": constraints_b[const_name],
                         "changes": const_changes,
                     }
@@ -535,8 +535,8 @@ class DiffAnalyzer:
         self, table_a: TableInfo, table_b: TableInfo, table_diff: TableDiff
     ):
         """Compare indexes between two tables."""
-        indexes_a = {i.name: i for i in table_a.indexes}
-        indexes_b = {i.name: i for i in table_b.indexes}
+        indexes_a = {i.index_name: i for i in table_a.indexes}
+        indexes_b = {i.index_name: i for i in table_b.indexes}
 
         idx_names_a = set(indexes_a.keys())
         idx_names_b = set(indexes_b.keys())
@@ -546,7 +546,7 @@ class DiffAnalyzer:
         for idx_name in added:
             index = indexes_b[idx_name]
             table_diff.indexes.setdefault("added", []).append(index)
-            self.result.indexes["added"].append({"table": table_a.name, "index": index})
+            self.result.indexes["added"].append({"table": table_a.table_name, "index": index})
 
         # Removed indexes
         removed = idx_names_a - idx_names_b
@@ -554,7 +554,7 @@ class DiffAnalyzer:
             index = indexes_a[idx_name]
             table_diff.indexes.setdefault("removed", []).append(index)
             self.result.indexes["removed"].append(
-                {"table": table_a.name, "index": index}
+                {"table": table_a.table_name, "index": index}
             )
 
         # Modified indexes
@@ -569,7 +569,7 @@ class DiffAnalyzer:
                 )
                 self.result.indexes["modified"].append(
                     {
-                        "table": table_a.name,
+                        "table": table_a.table_name,
                         "index": indexes_b[idx_name],
                         "changes": idx_changes,
                     }
@@ -612,8 +612,8 @@ class DiffAnalyzer:
         self, table_a: TableInfo, table_b: TableInfo, table_diff: TableDiff
     ):
         """Compare triggers between two tables."""
-        triggers_a = {t.name: t for t in table_a.triggers}
-        triggers_b = {t.name: t for t in table_b.triggers}
+        triggers_a = {t.trigger_name: t for t in table_a.triggers}
+        triggers_b = {t.trigger_name: t for t in table_b.triggers}
 
         trig_names_a = set(triggers_a.keys())
         trig_names_b = set(triggers_b.keys())
@@ -624,7 +624,7 @@ class DiffAnalyzer:
             trigger = triggers_b[trig_name]
             table_diff.triggers.setdefault("added", []).append(trigger)
             self.result.triggers["added"].append(
-                {"table": table_a.name, "trigger": trigger}
+                {"table": table_a.table_name, "trigger": trigger}
             )
 
         # Removed triggers
@@ -633,7 +633,7 @@ class DiffAnalyzer:
             trigger = triggers_a[trig_name]
             table_diff.triggers.setdefault("removed", []).append(trigger)
             self.result.triggers["removed"].append(
-                {"table": table_a.name, "trigger": trigger}
+                {"table": table_a.table_name, "trigger": trigger}
             )
 
         # Modified triggers
@@ -648,7 +648,7 @@ class DiffAnalyzer:
                 )
                 self.result.triggers["modified"].append(
                     {
-                        "table": table_a.name,
+                        "table": table_a.table_name,
                         "trigger": triggers_b[trig_name],
                         "changes": trig_changes,
                     }
@@ -694,8 +694,8 @@ class DiffAnalyzer:
 
     def _compare_views(self, schema_a: SchemaInfo, schema_b: SchemaInfo):
         """Compare views between schemas."""
-        views_a = {v.name: v for v in schema_a.views}
-        views_b = {v.name: v for v in schema_b.views}
+        views_a = {v.view_name: v for v in schema_a.views}
+        views_b = {v.view_name: v for v in schema_b.views}
 
         view_names_a = set(views_a.keys())
         view_names_b = set(views_b.keys())
@@ -829,8 +829,8 @@ class DiffAnalyzer:
 
     def _compare_sequences(self, schema_a: SchemaInfo, schema_b: SchemaInfo):
         """Compare sequences between schemas."""
-        seqs_a = {s.name: s for s in schema_a.sequences}
-        seqs_b = {s.name: s for s in schema_b.sequences}
+        seqs_a = {s.sequence_name: s for s in schema_a.sequences}
+        seqs_b = {s.sequence_name: s for s in schema_b.sequences}
 
         seq_names_a = set(seqs_a.keys())
         seq_names_b = set(seqs_b.keys())

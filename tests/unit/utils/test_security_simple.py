@@ -152,8 +152,8 @@ class TestSecurityIntegration:
             masked = mask_password(conn_str)
             sanitized = sanitize_for_logging(masked)
             
-            # Should not contain obvious passwords
-            assert "pass" not in masked.lower() or "password" not in masked.lower()
+            # Should not contain the actual password value, but "password" keyword is OK
+            assert "password=********" in masked or "passwd=********" in masked or "password" not in masked.lower()
             assert "secret" not in masked.lower()
             
             # Should be safe for logging

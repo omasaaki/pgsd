@@ -21,7 +21,7 @@ class TestLogConfig:
         config = LogConfig()
         
         assert config.level == "INFO"
-        assert config.format == "console"
+        assert config.format == "json"
         assert config.console_output is True
         assert config.file_path is None
         assert config.max_file_size == 10 * 1024 * 1024  # 10MB

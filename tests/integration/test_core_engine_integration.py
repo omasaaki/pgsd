@@ -34,6 +34,20 @@ class TestSchemaComparisonEngineIntegration:
                 "password": "test_pass",
             },
         }
+        
+        # Add source_db and target_db attributes for compatibility
+        source_db = Mock()
+        source_db.host = "localhost"
+        source_db.port = 5432
+        source_db.username = "test_user"
+        config.source_db = source_db
+        
+        target_db = Mock()
+        target_db.host = "localhost"
+        target_db.port = 5432
+        target_db.username = "test_user"
+        config.target_db = target_db
+        
         return config
 
     @pytest.fixture
@@ -201,7 +215,7 @@ class TestSchemaComparisonEngineIntegration:
         engine.schema_collector = AsyncMock()
         engine.schema_collector.collect_schema_info.side_effect = (
             DatabaseConnectionError(
-                host="localhost", port=5432, database="test_db", user="test_user"
+                "localhost", 5432, "test_db", "test_user"
             )
         )
 

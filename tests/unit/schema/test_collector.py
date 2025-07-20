@@ -3,7 +3,7 @@
 import pytest
 import asyncio
 from unittest.mock import Mock, AsyncMock
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from src.pgsd.schema.collector import SchemaInformationCollector
 from src.pgsd.database.manager import DatabaseManager
@@ -140,16 +140,16 @@ class TestSchemaInformationCollector:
         schema_info = await schema_collector.collect_schema_info("public", "source")
 
         # Verify results
-        assert schema_info["schema_name"] == "public"
-        assert schema_info["database_type"] == "source"
-        assert "collection_time" in schema_info
-        assert len(schema_info["tables"]) == 2
-        assert schema_info["tables"][0]["table_name"] == "users"
-        assert schema_info["tables"][1]["table_name"] == "posts"
+        assert schema_info.schema_name == "public"
+        assert schema_info.database_type == "source"
+        assert schema_info.collection_time is not None
+        assert len(schema_info.tables) == 2
+        assert schema_info.tables[0].table_name == "users"
+        assert schema_info.tables[1].table_name == "posts"
 
         # Verify tables have columns
-        assert "columns" in schema_info["tables"][0]
-        assert "columns" in schema_info["tables"][1]
+        assert hasattr(schema_info.tables[0], "columns")
+        assert hasattr(schema_info.tables[1], "columns")
 
         # Verify connection was returned
         mock_database_manager.return_source_connection.assert_called_once()
@@ -376,14 +376,14 @@ class TestSchemaInformationCollector:
 
         # Add to cache
         schema_collector._schema_cache["source:public"] = {"test": "data"}
-        schema_collector._cache_timestamps["source:public"] = datetime.utcnow()
+        schema_collector._cache_timestamps["source:public"] = datetime.now(timezone.utc)
 
         # Test cache hit
         assert schema_collector._is_cached("source:public")
 
         # Test cache expiration
         schema_collector._cache_timestamps["source:public"] = (
-            datetime.utcnow() - timedelta(seconds=400)
+            datetime.now(timezone.utc) - timedelta(seconds=400)
         )
         assert not schema_collector._is_cached("source:public")
 
@@ -392,8 +392,8 @@ class TestSchemaInformationCollector:
         # Add test data to cache
         schema_collector._schema_cache["source:public"] = {"test": "data1"}
         schema_collector._schema_cache["target:public"] = {"test": "data2"}
-        schema_collector._cache_timestamps["source:public"] = datetime.utcnow()
-        schema_collector._cache_timestamps["target:public"] = datetime.utcnow()
+        schema_collector._cache_timestamps["source:public"] = datetime.now(timezone.utc)
+        schema_collector._cache_timestamps["target:public"] = datetime.now(timezone.utc)
 
         # Clear specific schema
         schema_collector.clear_cache("public")
@@ -407,8 +407,8 @@ class TestSchemaInformationCollector:
         # Add test data to cache
         schema_collector._schema_cache["source:public"] = {"test": "data1"}
         schema_collector._schema_cache["target:public"] = {"test": "data2"}
-        schema_collector._cache_timestamps["source:public"] = datetime.utcnow()
-        schema_collector._cache_timestamps["target:public"] = datetime.utcnow()
+        schema_collector._cache_timestamps["source:public"] = datetime.now(timezone.utc)
+        schema_collector._cache_timestamps["target:public"] = datetime.now(timezone.utc)
 
         # Get statistics
         stats = schema_collector.get_cache_statistics()
@@ -460,7 +460,7 @@ class TestSchemaInformationCollector:
         schema_info = await schema_collector.collect_schema_info("public", "target")
 
         # Verify target database was used
-        assert schema_info["database_type"] == "target"
+        assert schema_info.database_type == "target"
         mock_database_manager.get_target_connection.assert_called_once()
         mock_database_manager.return_target_connection.assert_called_once()
 
@@ -496,8 +496,8 @@ class TestSchemaCollectorEdgeCases:
 
         # Verify all results are consistent
         for result in results:
-            assert result["schema_name"] == "public"
-            assert result["database_type"] == "source"
+            assert result.schema_name == "public"
+            assert result.database_type == "source"
 
     @pytest.mark.asyncio
     async def test_empty_schema_collection(self, mock_database_manager):
@@ -518,7 +518,7 @@ class TestSchemaCollectorEdgeCases:
         schema_info = await collector.collect_schema_info("empty", "source")
 
         # Verify empty results
-        assert len(schema_info["tables"]) == 0
-        assert len(schema_info["views"]) == 0
-        assert len(schema_info["sequences"]) == 0
-        assert len(schema_info["functions"]) == 0
+        assert len(schema_info.tables) == 0
+        assert len(schema_info.views) == 0
+        assert len(schema_info.sequences) == 0
+        assert len(schema_info.functions) == 0

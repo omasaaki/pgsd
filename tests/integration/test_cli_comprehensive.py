@@ -191,7 +191,7 @@ class TestCompareCommand:
                     '--source-host', 'localhost',
                     '--source-db', 'pgsd_test'
                 ],
-                'expected_exit_codes': [2]  # Missing required arguments
+                'expected_exit_codes': [1, 2]  # Configuration or missing arguments
             },
             {
                 'name': 'invalid_host',

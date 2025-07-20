@@ -24,7 +24,8 @@ _cleanup_callbacks = []
 
 def register_cleanup(callback):
     """Register cleanup callback."""
-    _cleanup_callbacks.append(callback)
+    if callback not in _cleanup_callbacks:
+        _cleanup_callbacks.append(callback)
 
 
 def cleanup():
@@ -33,13 +34,25 @@ def cleanup():
         try:
             callback()
         except Exception as e:
-            print(f"Warning: Cleanup error: {e}", file=sys.stderr)
+            try:
+                print(f"Warning: Cleanup error: {e}", file=sys.stderr)
+            except Exception:
+                # If stderr write fails, silently continue
+                pass
 
 
 def signal_handler(signum, frame):
     """Handle signals gracefully."""
-    print(f"\nReceived signal {signum}, shutting down...", file=sys.stderr)
-    cleanup()
+    try:
+        print(f"\nReceived signal {signum}, shutting down...", file=sys.stderr)
+    except Exception:
+        pass  # If stderr write fails, continue
+    
+    try:
+        cleanup()
+    except Exception:
+        pass  # If cleanup fails, still exit
+    
     sys.exit(128 + signum)
 
 
@@ -51,7 +64,7 @@ def setup_signal_handlers():
         if threading.current_thread() is threading.main_thread():
             signal.signal(signal.SIGINT, signal_handler)
             signal.signal(signal.SIGTERM, signal_handler)
-    except (ValueError, OSError):
+    except (ValueError, OSError, RuntimeError):
         # Signal setup may fail in some environments (tests, threads, etc.)
         pass
 
@@ -59,15 +72,24 @@ def setup_signal_handlers():
 def setup_application():
     """Setup application environment."""
     # Register cleanup to run on exit
-    atexit.register(cleanup)
+    try:
+        atexit.register(cleanup)
+    except Exception:
+        pass  # Continue if atexit registration fails
     
     # Setup signal handlers
-    setup_signal_handlers()
+    try:
+        setup_signal_handlers()
+    except Exception:
+        pass  # Continue if signal setup fails
     
     # Setup basic logging (CLI will configure detailed logging)
-    log_config = get_default_config()
-    log_config.level = "WARNING"
-    logging.basicConfig(level=getattr(logging, log_config.level))
+    try:
+        log_config = get_default_config()
+        log_config.level = "WARNING"
+        logging.basicConfig(level=getattr(logging, log_config.level))
+    except Exception:
+        pass  # Continue if logging setup fails
 
 
 def main(args: Optional[List[str]] = None) -> int:
@@ -116,7 +138,10 @@ def main(args: Optional[List[str]] = None) -> int:
         
     finally:
         # Ensure cleanup runs
-        cleanup()
+        try:
+            cleanup()
+        except Exception:
+            pass  # Don't let cleanup errors affect the exit code
 
 
 def console_entry_point():

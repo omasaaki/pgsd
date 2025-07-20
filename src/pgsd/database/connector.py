@@ -2,7 +2,7 @@
 
 import logging
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any, Union
 
 try:
@@ -68,7 +68,7 @@ class DatabaseConnector:
             username=db_config.username,
             schema=db_config.schema or "public",
             status=ConnectionStatus.CONNECTED,
-            connection_time=datetime.utcnow(),
+            connection_time=datetime.now(timezone.utc),
         )
 
         self.logger.info(
@@ -108,7 +108,7 @@ class DatabaseConnector:
                 ErrorMessages.CONNECTION_NOT_AVAILABLE, connection_id=self.connection_id
             )
 
-        start_time = datetime.utcnow()
+        start_time = datetime.now(timezone.utc)
 
         try:
             with self.connection.cursor(cursor_factory=RealDictCursor) as cursor:
@@ -132,7 +132,7 @@ class DatabaseConnector:
                     return []
 
         except psycopg2.Error as e:
-            execution_time = (datetime.utcnow() - start_time).total_seconds()
+            execution_time = (datetime.now(timezone.utc) - start_time).total_seconds()
 
             self.logger.error(
                 "Query execution failed",
@@ -152,7 +152,7 @@ class DatabaseConnector:
             )
 
         except Exception as e:
-            execution_time = (datetime.utcnow() - start_time).total_seconds()
+            execution_time = (datetime.now(timezone.utc) - start_time).total_seconds()
 
             self.logger.error(
                 "Unexpected error during query execution",
@@ -172,8 +172,8 @@ class DatabaseConnector:
             )
 
         finally:
-            execution_time = (datetime.utcnow() - start_time).total_seconds()
-            self._connection_info.last_activity = datetime.utcnow()
+            execution_time = (datetime.now(timezone.utc) - start_time).total_seconds()
+            self._connection_info.last_activity = datetime.now(timezone.utc)
 
             self.logger.debug(
                 LogMessages.QUERY_EXECUTED,
@@ -358,7 +358,7 @@ class DatabaseConnector:
         try:
             await self.execute_query(QueryConstants.HEALTH_CHECK_QUERY)
             self._connection_info.status = ConnectionStatus.CONNECTED
-            self._connection_info.last_activity = datetime.utcnow()
+            self._connection_info.last_activity = datetime.now(timezone.utc)
             return True
         except Exception as e:
             self._connection_info.status = ConnectionStatus.ERROR

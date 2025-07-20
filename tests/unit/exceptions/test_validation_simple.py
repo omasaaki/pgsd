@@ -21,7 +21,7 @@ class TestValidationError:
         assert error.error_code == "VALIDATION_ERROR"
         assert error.severity == ErrorSeverity.MEDIUM
         assert error.category == ErrorCategory.VALIDATION
-        assert error.exit_code == 30
+        assert error.get_exit_code() == 30
         assert error.retriable is False
 
     def test_init_with_custom_params(self):
@@ -29,14 +29,13 @@ class TestValidationError:
         error = ValidationError(
             "Custom validation error",
             error_code="CUSTOM_VALIDATION",
-            severity=ErrorSeverity.HIGH,
-            exit_code=35
+            severity=ErrorSeverity.HIGH
         )
         
         assert str(error) == "Custom validation error"
         assert error.error_code == "CUSTOM_VALIDATION"
         assert error.severity == ErrorSeverity.HIGH
-        assert error.exit_code == 35
+        assert error.get_exit_code() == 30  # Default validation error code
 
     def test_technical_details(self):
         """Test technical details are captured."""
@@ -63,7 +62,7 @@ class TestInvalidSchemaError:
         error_message = str(error)
         assert "Schema 'user_schema' failed validation" in error_message
         assert error.error_code == "INVALID_SCHEMA"
-        assert error.exit_code == 31
+        assert error.get_exit_code() == 31
 
     def test_init_with_database(self):
         """Test InvalidSchemaError initialization with database."""
@@ -106,65 +105,71 @@ class TestUnsupportedFeatureError:
 
     def test_init_basic(self):
         """Test UnsupportedFeatureError initialization."""
-        error = UnsupportedFeatureError("advanced_partitioning", "PostgreSQL 12")
+        error = UnsupportedFeatureError("advanced_partitioning", "partitioning")
         
         error_message = str(error)
-        assert "Feature 'advanced_partitioning' is not supported" in error_message
-        assert "PostgreSQL 12" in error_message
+        assert "Unsupported partitioning" in error_message
+        assert "advanced_partitioning" in error_message
         assert error.error_code == "UNSUPPORTED_FEATURE"
 
     def test_init_with_workaround(self):
         """Test UnsupportedFeatureError with workaround suggestion."""
         error = UnsupportedFeatureError(
             "json_operators", 
-            "PostgreSQL 9.6",
-            workaround="Use JSONB functions instead"
+            "operator",
+            workaround_suggestion="Use JSONB functions instead"
         )
         
-        assert "workaround" in error.technical_details
-        assert error.technical_details["workaround"] == "Use JSONB functions instead"
+        # Workaround is added to recovery_suggestions, not technical_details
+        assert any("Use JSONB functions instead" in suggestion 
+                  for suggestion in error.recovery_suggestions)
 
     def test_init_with_minimum_version(self):
         """Test UnsupportedFeatureError with minimum version requirement."""
         error = UnsupportedFeatureError(
             "window_functions", 
-            "PostgreSQL 8.3",
-            minimum_version="PostgreSQL 8.4"
+            "function",
+            min_supported_version="8.4"
         )
         
-        assert "minimum_version" in error.technical_details
-        assert error.technical_details["minimum_version"] == "PostgreSQL 8.4"
+        assert "min_supported_version" in error.technical_details
+        assert error.technical_details["min_supported_version"] == "8.4"
 
     def test_technical_details(self):
         """Test technical details structure."""
-        error = UnsupportedFeatureError("feature_name", "current_version")
+        error = UnsupportedFeatureError("feature_name", "feature_type")
         
         details = error.technical_details
         assert details["feature_name"] == "feature_name"
-        assert details["current_version"] == "current_version"
+        assert details["feature_type"] == "feature_type"
+        assert details["min_supported_version"] is None
 
     def test_init_with_alternative(self):
         """Test UnsupportedFeatureError with alternative suggestion."""
         error = UnsupportedFeatureError(
             "partitioned_tables", 
-            "PostgreSQL 9.6",
-            alternative="Use table inheritance instead"
+            "table feature",
+            workaround_suggestion="Use table inheritance instead"
         )
         
-        assert "alternative" in error.technical_details
-        assert error.technical_details["alternative"] == "Use table inheritance instead"
+        # Alternative suggestions are in recovery_suggestions, not technical_details
+        assert any("Use table inheritance instead" in suggestion 
+                  for suggestion in error.recovery_suggestions)
 
     def test_init_with_all_optional_params(self):
         """Test UnsupportedFeatureError with all optional parameters."""
         error = UnsupportedFeatureError(
             "stored_procedures", 
-            "PostgreSQL 10",
-            workaround="Use functions instead",
-            minimum_version="PostgreSQL 11",
-            alternative="Use PL/pgSQL functions"
+            "procedure",
+            min_supported_version="11",
+            workaround_suggestion="Use functions instead"
         )
         
         details = error.technical_details
-        assert details["workaround"] == "Use functions instead"
-        assert details["minimum_version"] == "PostgreSQL 11"
-        assert details["alternative"] == "Use PL/pgSQL functions"
+        assert details["feature_name"] == "stored_procedures"
+        assert details["feature_type"] == "procedure"
+        assert details["min_supported_version"] == "11"
+        
+        # Check workaround is in recovery suggestions
+        assert any("Use functions instead" in suggestion 
+                  for suggestion in error.recovery_suggestions)

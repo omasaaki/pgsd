@@ -155,6 +155,13 @@ class ConfigurationValidator:
                 normalized[key] = self._convert_to_enum(
                     value, OutputFormat, f"output.{key}"
                 )
+            elif key == "file":
+                # Map 'file' to 'path' for OutputConfig
+                normalized["path"] = value
+            elif key == "directory":
+                # Map 'directory' to 'path' for OutputConfig (if no file specified)
+                if "path" not in normalized:
+                    normalized["path"] = value
             else:
                 normalized[key] = value
         return normalized

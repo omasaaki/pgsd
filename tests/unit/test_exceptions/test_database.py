@@ -39,7 +39,7 @@ class TestDatabaseConnectionError:
 
     def test_basic_connection_error(self):
         """Test basic database connection error creation."""
-        error = DatabaseConnectionError(host="localhost", port=5432, database="testdb")
+        error = DatabaseConnectionError("localhost", 5432, "testdb")
 
         assert "localhost:5432" in str(error)
         assert "testdb" in str(error)
@@ -64,9 +64,7 @@ class TestDatabaseConnectionError:
 
     def test_connection_error_with_user(self):
         """Test connection error with user information."""
-        error = DatabaseConnectionError(
-            host="db.example.com", port=5433, database="myapp", user="appuser"
-        )
+        error = DatabaseConnectionError("db.example.com", 5433, "myapp", "appuser")
 
         assert "db.example.com:5433" in str(error)
         assert "myapp" in str(error)
@@ -77,9 +75,7 @@ class TestDatabaseConnectionError:
         """Test connection error with original exception."""
         original = ConnectionError("Network unreachable")
 
-        error = DatabaseConnectionError(
-            host="localhost", port=5432, database="testdb", original_error=original
-        )
+        error = DatabaseConnectionError("localhost", 5432, "testdb", None, original)
 
         assert error.original_error == original
         assert error.technical_details["original_error_type"] == "ConnectionError"

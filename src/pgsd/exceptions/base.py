@@ -2,7 +2,7 @@
 
 import json
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 from enum import Enum
 
@@ -87,7 +87,7 @@ class PGSDError(Exception):
 
         # Generate unique error ID and timestamp
         self.id = str(uuid.uuid4())
-        self.timestamp = datetime.utcnow()
+        self.timestamp = datetime.now(timezone.utc)
 
         # Add original error information to technical details
         if original_error:
@@ -211,7 +211,7 @@ class PGSDWarning(UserWarning):
         super().__init__(message)
         self.message = message
         self.context = context or {}
-        self.timestamp = datetime.utcnow()
+        self.timestamp = datetime.now(timezone.utc)
 
     def __str__(self) -> str:
         """Return string representation of the warning."""

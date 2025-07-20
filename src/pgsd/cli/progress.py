@@ -33,10 +33,10 @@ class ProgressReporter:
             stage: Current operation stage description
             percentage: Progress percentage (0-100)
         """
+        self.current_stage = stage
+        
         if not self.show_progress_enabled:
             return
-        
-        self.current_stage = stage
         
         # Create progress bar
         bar_width = 40

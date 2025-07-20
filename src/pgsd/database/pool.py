@@ -4,7 +4,7 @@ import logging
 import queue
 import threading
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, List, Dict, Any
 
 try:
@@ -45,7 +45,7 @@ class PooledConnection:
     def mark_used(self):
         """Mark connection as used."""
         with self.lock:
-            self.last_used = datetime.utcnow()
+            self.last_used = datetime.now(timezone.utc)
             self.use_count += 1
 
     def is_expired(self, max_lifetime: int) -> bool:
@@ -57,7 +57,7 @@ class PooledConnection:
         Returns:
             True if connection has expired
         """
-        return (datetime.utcnow() - self.created_at).total_seconds() > max_lifetime
+        return (datetime.now(timezone.utc) - self.created_at).total_seconds() > max_lifetime
 
     def is_idle_too_long(self, idle_timeout: int) -> bool:
         """Check if connection has been idle too long.
@@ -68,7 +68,7 @@ class PooledConnection:
         Returns:
             True if connection has been idle too long
         """
-        return (datetime.utcnow() - self.last_used).total_seconds() > idle_timeout
+        return (datetime.now(timezone.utc) - self.last_used).total_seconds() > idle_timeout
 
     def test_health(self) -> bool:
         """Test connection health.
@@ -284,7 +284,7 @@ class ConnectionPool:
             connection = self.factory.create_connection(self.db_config)
 
             # Create pooled connection
-            pooled_conn = PooledConnection(connection, datetime.utcnow())
+            pooled_conn = PooledConnection(connection, datetime.now(timezone.utc))
             pooled_conn.in_use = True
 
             # Add to pool tracking
@@ -358,7 +358,7 @@ class ConnectionPool:
             if self._stats["total_created"] > 0:
                 avg_connection_time = (
                     sum(
-                        (datetime.utcnow() - conn.created_at).total_seconds()
+                        (datetime.now(timezone.utc) - conn.created_at).total_seconds()
                         for conn in self._all_connections
                     )
                     / len(self._all_connections)
@@ -379,7 +379,7 @@ class ConnectionPool:
             healthy_connections=healthy_connections,
             failed_connections=failed_connections,
             average_connection_time=avg_connection_time,
-            last_health_check=datetime.utcnow(),
+            last_health_check=datetime.now(timezone.utc),
         )
 
     def cleanup_stale_connections(self) -> int:

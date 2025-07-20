@@ -2,7 +2,7 @@
 
 import logging
 from typing import Dict, List, Optional, Any
-from datetime import datetime
+from datetime import datetime, timezone
 
 from ..database.manager import DatabaseManager
 from ..database.version_detector import VersionDetector
@@ -90,7 +90,7 @@ class SchemaInformationCollector:
                     )
 
                 # Collect all schema information
-                collection_time = datetime.utcnow()
+                collection_time = datetime.now(timezone.utc)
                 
                 # Collect raw data
                 tables_data = await self._collect_tables(connector, schema_name)
@@ -459,7 +459,7 @@ class SchemaInformationCollector:
         if not cache_time:
             return False
 
-        age = (datetime.utcnow() - cache_time).total_seconds()
+        age = (datetime.now(timezone.utc) - cache_time).total_seconds()
         return age < self._cache_ttl
 
     def clear_cache(self, schema_name: Optional[str] = None):
@@ -494,7 +494,7 @@ class SchemaInformationCollector:
             "oldest_cache_age": (
                 min(
                     [
-                        (datetime.utcnow() - ts).total_seconds()
+                        (datetime.now(timezone.utc) - ts).total_seconds()
                         for ts in self._cache_timestamps.values()
                     ]
                 )

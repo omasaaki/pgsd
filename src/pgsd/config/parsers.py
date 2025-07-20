@@ -45,10 +45,12 @@ class YAMLParser:
             self.logger.debug(f"Parsed YAML configuration from {file_path}")
             return config
 
-        except yaml.YAMLError as e:
-            raise ConfigurationError(f"Invalid YAML in {file_path}: {e}") from e
         except Exception as e:
-            raise ConfigurationError(f"Failed to read {file_path}: {e}") from e
+            # Check if it's a YAML-specific error
+            if e.__class__.__name__ in ['YAMLError', 'ScannerError', 'ParserError']:
+                raise ConfigurationError(f"Invalid YAML in {file_path}: {e}") from e
+            else:
+                raise ConfigurationError(f"Failed to read {file_path}: {e}") from e
 
 
 class EnvironmentParser:
